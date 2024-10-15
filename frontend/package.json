@@ -19,6 +19,7 @@
       "@veramo/credential-jwt": "file:../../veramo/packages/credential-jwt",
       "@veramo/credential-w3c": "file:../../veramo/packages/credential-w3c",
       "@veramo/did-jwt": "file:../../veramo/packages/did-jwt",
+      "@veramo/did-resolver": "file:../../veramo/packages/did-resolver",
       "@veramo/did-manager": "file:../../veramo/packages/did-manager",
       "@veramo/did-provider-ethr": "file:../../veramo/packages/did-provider-ethr",
       "@veramo/key-manager": "file:../../veramo/packages/key-manager",
