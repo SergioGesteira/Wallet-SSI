@@ -26,7 +26,7 @@ import { Buffer } from 'buffer';
 import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
 import { createAppKit } from '@reown/appkit/react';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
-import { mainnet, sepolia } from '@reown/appkit/networks';
+import { AppKitNetwork, mainnet, sepolia } from '@reown/appkit/networks';
 import WalletConnection from './components/WalletConnection';
 import AccountSelector from './components/AccountSelector';
 import DidDisplay from './components/DidDisplay';
@@ -52,7 +52,7 @@ window.Buffer = Buffer;
 const projectId: string = import.meta.env.VITE_WALLETCONNECT_ID;
 
 // 2. Set the networks
-const networks = [sepolia, mainnet];
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [sepolia, mainnet];
 console.log('Networks: ', networks);
 
 const metadata = {
