@@ -1,29 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Web3KeyManagementSystem } from '@veramo/kms-web3';
-import { KeyManager } from '@veramo/key-manager';
 import {
   ManagedKeyInfo,
-  IDIDManager,
-  IResolver,
-  createAgent,
-  ICredentialPlugin,
-  IDataStore,
-  IKeyManager,
   VerifiableCredential,
   VerifiablePresentation,
   DIDResolutionResult,
   DIDDocument,
 } from '@veramo/core';
-import { DIDManager, MemoryDIDStore } from '@veramo/did-manager';
-import { MemoryKeyStore } from '@veramo/key-manager';
-import { EthrDIDProvider } from '@veramo/did-provider-ethr';
-import { DIDResolverPlugin } from '@veramo/did-resolver';
-import { getResolver as getEthrDidResolver } from 'ethr-did-resolver';
-import { Resolver } from 'did-resolver';
-import { CredentialPlugin } from '@veramo/credential-w3c';
-import { CredentialProviderEIP712 } from '@veramo/credential-eip712';
+
 import { Buffer } from 'buffer';
-import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
 import { createAppKit } from '@reown/appkit/react';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
 import { mainnet, sepolia } from '@reown/appkit/networks';
@@ -40,6 +25,7 @@ import PresentationValidator from './components/PresentationValidator';
 //import Login from './components/login';
 import { addDelegate, changeOwner, ConfiguredAgent, getDidDocument, revokeDelegate } from './utils';
 import { BrowserProvider, Signer } from 'ethers';
+import { veramoAgent } from './agent'; // Import the agent
 
 declare global {
   interface Window {
@@ -83,7 +69,7 @@ function App() {
   const [kms, setKms] = useState<Web3KeyManagementSystem | null>(null);
   const [keys, setKeys] = useState<ManagedKeyInfo[]>([]);
   const [selectedKey, setSelectedKey] = useState<ManagedKeyInfo | null>(null);
-  const [agent, setAgent] = useState<ConfiguredAgent | null>(null);
+  const [agent,setAgent] = useState<ConfiguredAgent | null>(null);
   const [selectedDidDocument, setSelectedDidDocument] = useState<DIDDocument | null>(null);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
   const [verifiableCredential, setVerifiableCredential] = useState<VerifiableCredential | null>(null);
@@ -93,115 +79,14 @@ function App() {
   const [delegateAddress, setDelegateAddress] = useState<string>('');
   const [expirationTime, setExpirationTime] = useState(3600);
   const [revokeDelegateAddress, setRevokeDelegateAddress] = useState<string>('');
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [userClaims, setUserClaims] = useState<string>('');
+  // const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  // const [userClaims, setUserClaims] = useState<string>('');
 
-  const importDids = useCallback(async () => {
-    if (!agent) {
-      throw new Error('Agent not initialized');
-    }
-
-    if (!keys) {
-      throw new Error('No keys found');
-    }
-
-    keys.forEach(async (key) => {
-      const did = `did:ethr:sepolia:${key.meta?.account.address}`;
-      const importedDid = await agent.didManagerImport({
-        did,
-        controllerKeyId: key.kid,
-        provider: 'did:ethr:sepolia',
-        keys: [
-          {
-            kid: key.kid,
-            type: 'Secp256k1',
-            kms: 'web3',
-            publicKeyHex: key.publicKeyHex,
-            meta: key.meta,
-            privateKeyHex: '',
-          },
-        ],
-      });
-      console.log('DID created: ', importedDid);
-      const test = await agent.resolveDid({ didUrl: did });
-      console.log('DID resolved: ', test);
-    });
-  }, [agent, keys]);
-
-  const createCustomAgent = useCallback(async () => {
-    const didStore = new MemoryDIDStore();
-    const keyStore = new MemoryKeyStore();
-
-    const registries = {
-      mainnet: '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
-      sepolia: '0x03d5003bf0e79c5f5223588f347eba39afbc3818',
-    };
-
-    if (!kms || !browserProvider) {
-      throw new Error('KMS not initialized');
-    }
-    const veramoAgent = createAgent<IDIDManager & IResolver & ICredentialPlugin & IDataStore & IKeyManager>({
-      plugins: [
-        new KeyManager({
-          store: keyStore,
-          kms: {
-            web3: kms,
-          },
-        }),
-        new DIDManager({
-          store: didStore,
-          defaultProvider: 'did:ethr',
-          providers: {
-            'did:ethr': new EthrDIDProvider({
-              defaultKms: 'web3',
-              registry: registries['mainnet'],
-              web3Provider: browserProvider,
-            }),
-            'did:ethr:sepolia': new EthrDIDProvider({
-              defaultKms: 'web3',
-              registry: registries['sepolia'],
-              web3Provider: browserProvider,
-            }),
-          },
-        }),
-        new DIDResolverPlugin({
-          resolver: new Resolver(
-            getEthrDidResolver({
-              networks: [
-                {
-                  name: 'mainnet',
-                  registry: registries['mainnet'],
-                  provider: browserProvider,
-                  signer: browserProvider.getSigner(),
-                },
-                {
-                  name: 'sepolia',
-                  registry: registries['sepolia'],
-                  provider: browserProvider,
-                  signer: browserProvider.getSigner(),
-                },
-              ],
-            })
-          ),
-        }),
-        new CredentialPlugin({
-          issuers: [new CredentialProviderEIP712(), new CredentialProviderEip712JWT()],
-        }),
-      ],
-    });
-    console.log('Agent created: ', veramoAgent);
-
-    setAgent(veramoAgent);
-  }, [kms, setAgent, browserProvider]);
+  
 
   useEffect(() => {
-    if (kms && !agent) {
-      createCustomAgent();
-    }
-    if (agent) {
-      importDids();
-    }
-  }, [kms, createCustomAgent, agent, importDids]);
+    setAgent(veramoAgent);
+  }, []);
 
   useEffect(() => {
     const resolve = async () => {
@@ -227,7 +112,7 @@ function App() {
     const identity = `did:ethr:sepolia:${selectedKey?.meta?.account.address}`; // Assuming you want to change the owner of the selected key's DID
     
     changeOwner(browserProvider, agent, signer, identity, newOwner);
-  }, [browserProvider, agent, selectedKey]);
+  }, [browserProvider, agent,  selectedKey]);
 
   const handleAddDelegate = useCallback(async () => {
     if (!browserProvider) {
@@ -238,7 +123,7 @@ function App() {
     const identity = `did:ethr:sepolia:${selectedKey?.meta?.account.address}`; // Assuming you want to add a delegate to the selected key's DID
   
     await addDelegate(browserProvider, agent, signer, identity, delegateAddress, expirationTime);
-  }, [browserProvider, agent, selectedKey,delegateAddress,expirationTime]);
+  }, [browserProvider, agent, selectedKey, delegateAddress, expirationTime]);
 
   const handleRevokeDelegate = useCallback(async () => {
     if (!browserProvider) {
