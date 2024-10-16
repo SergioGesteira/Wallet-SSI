@@ -26,7 +26,7 @@ import { Buffer } from 'buffer';
 import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
 import { createAppKit } from '@reown/appkit/react';
 import { EthersAdapter } from '@reown/appkit-adapter-ethers';
-import { AppKitNetwork, mainnet, sepolia } from '@reown/appkit/networks';
+import { mainnet, sepolia } from '@reown/appkit/networks';
 import WalletConnection from './components/WalletConnection';
 import AccountSelector from './components/AccountSelector';
 import DidDisplay from './components/DidDisplay';
@@ -36,6 +36,7 @@ import CredentialValidator from './components/CredentialValidator';
 import PresentationCreator from './components/PresentationCreator';
 import PresentationDisplay from './components/PresentationDisplay';
 import PresentationValidator from './components/PresentationValidator';
+
 //import Login from './components/login';
 import { addDelegate, changeOwner, ConfiguredAgent, getDidDocument, revokeDelegate } from './utils';
 import { BrowserProvider, Signer } from 'ethers';
@@ -49,10 +50,12 @@ declare global {
 window.Buffer = Buffer;
 
 // 1. Get projectId
-const projectId: string = import.meta.env.VITE_WALLETCONNECT_ID;
+//const projectId: string = import.meta.env.VITE_WALLETCONNECT_ID;
+const projectId: string = "a5e2df042276815c407d0d9b04889f73";
+
 
 // 2. Set the networks
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [sepolia, mainnet];
+const networks = [sepolia, mainnet];
 console.log('Networks: ', networks);
 
 const metadata = {
@@ -253,17 +256,17 @@ function App() {
     await revokeDelegate(browserProvider, agent, signer, identity, revokeDelegateAddress);
     }, [browserProvider, agent, selectedKey, revokeDelegateAddress]);
 
-    const handleLoginSuccess = (claims: string) => {
-      setUserClaims(claims);
-      setIsLoggedIn(true);
-    };
+    // const handleLoginSuccess = (claims: string) => {
+    //   setUserClaims(claims);
+    //   setIsLoggedIn(true);
+    // };
 
   return (
     <div className="App">
     
     <>
      
-      <Login agent={agent} onLoginSuccess={handleLoginSuccess} />
+      {/* <Login agent={agent} onLoginSuccess={handleLoginSuccess} /> */}
     
       <WalletConnection setKms={setKms} setKeys={setKeys} setBrowserProvider={setBrowserProvider} setSigner = {setSigner} />
       <div style={{ marginBottom: '20px' }}></div>

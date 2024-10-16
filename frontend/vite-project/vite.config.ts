@@ -1,11 +1,18 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
 
-// https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    host: 'localhost',
-    port: 5173, // O el puerto que prefieras
+export default defineConfig((env) => {
+  let alias = {};
+  if (env.mode == 'development') {
+    alias = {
+      'ethr-did-resolver': path.resolve('./node_modules/ethr-did-resolver/src/index.ts'),
+    };
   }
-})
+  return {
+    plugins: [react()],
+    resolve: {
+      alias,
+    },
+  };
+});
