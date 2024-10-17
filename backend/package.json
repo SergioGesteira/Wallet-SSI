@@ -23,12 +23,14 @@
     "@veramo/credential-eip712": "file:../../veramo/packages/credential-eip712",
     "@veramo/credential-jwt": "file:../../veramo/packages/credential-jwt",
     "@veramo/credential-w3c": "file:../../veramo/packages/credential-w3c",
+    "@veramo/data-store": "^6.0.0",
     "@veramo/did-jwt": "file:../../veramo/packages/did-jwt",
     "@veramo/did-manager": "file:../../veramo/packages/did-manager",
     "@veramo/did-provider-ethr": "file:../../veramo/packages/did-provider-ethr",
     "@veramo/did-resolver": "file:../../veramo/packages/did-resolver",
     "@veramo/key-manager": "file:../../veramo/packages/key-manager",
     "@veramo/kms-web3": "file:../../veramo/packages/kms-web3",
+    "@veramo/selective-disclosure": "^6.0.0",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
     "credential-eip712jwt": "file:../../credential-eip712jwt",
@@ -45,6 +47,7 @@
     "passport-local": "^1.0.0",
     "sqlite3": "^5.1.7",
     "ts-node": "^10.9.2",
+    "typeorm": "^0.3.20",
     "typescript": "^5.6.3"
   }
 }
