@@ -2,11 +2,17 @@
   "compilerOptions": {
     "preserveConstEnums": true,
     "strict": true,
-    "target": "esnext",
-    "module": "esnext",
+    "target": "ES2020",
+    "module": "ESNext",
     "rootDir": "./",
     "moduleResolution": "node",
+    "resolveJsonModule": true, 
     "esModuleInterop": true,
     "downlevelIteration": true
-  }
+  },
+  "include": [
+    "src/**/*",
+    "backend.d.ts"
+  ],
+  "exclude": ["node_modules"]   
 }

@@ -1,0 +1,42 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login con Verifiable Presentation</h1>
+    <form id="loginForm">
+        <label for="jwt">JWT de la Presentación:</label>
+        <input type="text" id="jwt" name="jwt" required>
+        <button type="submit">Iniciar Sesión</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const jwt = document.getElementById('jwt').value;
+            const response = await fetch('/verifyPresentation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ jwt }),
+            });
+
+            const data = await response.json();
+            const messageDiv = document.getElementById('message');
+
+            if (response.ok) {
+                messageDiv.innerText = '¡Login exitoso!';
+                // Redirige o realiza otra acción
+            } else {
+                messageDiv.innerText = data.message;
+            }
+        };
+    </script>
+</body>
+</html>
