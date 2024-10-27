@@ -1,7 +1,7 @@
 // import cors from 'cors';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-//import jwt from 'jsonwebtoken'; 
+import jwt from 'jsonwebtoken'; 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 import crypto from 'crypto';
@@ -15,21 +15,26 @@ import dotenv from 'dotenv';
 dotenv.config();
 // ===================== VERAMO CONSTANTS =====================
 import { createAgent } from '@veramo/core';
-//import { VerifiablePresentation } from '@veramo/core';
+//import { IDIDManager, IResolver, ICredentialPlugin, IDataStore, IKeyManager, TAgent } from '@veramo/core';
+
 import { KeyManager, MemoryKeyStore } from '@veramo/key-manager';
 import { DIDManager, MemoryDIDStore } from '@veramo/did-manager';
 import { EthrDIDProvider } from '@veramo/did-provider-ethr';
-
-// import { DIDResolverPlugin } from '@veramo/did-resolver';
-// import { getResolver as getEthrDidResolver } from 'ethr-did-resolver';
-// import { Resolver } from 'did-resolver';
+import { Web3KeyManagementSystem } from '@veramo/kms-web3';
+import { DIDResolverPlugin } from '@veramo/did-resolver';
+import { getResolver as getEthrDidResolver } from 'ethr-did-resolver';
+import { Resolver } from 'did-resolver';
 import { CredentialPlugin } from '@veramo/credential-w3c';
 import { CredentialProviderEIP712 } from '@veramo/credential-eip712';
 import { SelectiveDisclosure } from '@veramo/selective-disclosure';
 import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
+
 import { migrations, Entities } from '@veramo/data-store';
 
 import { BrowserProvider } from 'ethers';
+
+const provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org")
+//type ConfiguredAgent = TAgent<IDIDManager & IResolver & ICredentialPlugin & IDataStore & IKeyManager>;
 
 // let browserProvider 
 
@@ -59,6 +64,7 @@ app.use(passport.session());
 
 const DATABASE_FILE = 'database.sqlite';
 import { DataSource } from 'typeorm';
+import { ethers } from 'ethers';
 const dbConnection = new DataSource({
     type: 'sqlite',
     database: DATABASE_FILE,
@@ -77,7 +83,7 @@ dbConnection.initialize()
 });
 
 
-const kms = null;
+const kms = new Web3KeyManagementSystem({ eip1193: provider }); // Usa el proveedor configurado aquí
 const keys = [];
 keys.forEach(async (key) => {
     const did = `did:ethr:sepolia:${key.meta?.account.address}`;
@@ -97,8 +103,7 @@ keys.forEach(async (key) => {
         ],
     });
     console.log('DID created: ', importedDid);
-    const test = await agent.resolveDid({ didUrl: did });
-    console.log('DID resolved: ', test);
+
 });
 const registries = {
     mainnet: '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
@@ -121,63 +126,45 @@ const agent = createAgent({
                 'did:ethr': new EthrDIDProvider({
                     defaultKms: 'web3',
                     registry: registries['mainnet'],
-                    web3Provider: !BrowserProvider,
+                    web3Provider: provider,
                 }),
                 'did:ethr:sepolia': new EthrDIDProvider({
                     defaultKms: 'web3',
                     registry: registries['sepolia'],
-                    web3Provider: !BrowserProvider,
+                    web3Provider: provider,
                 }),
             },
         }),
-        // new DIDResolverPlugin({
-        //     resolver: new Resolver(getEthrDidResolver({
-        //         networks: [
-        //             {
-        //                 name: 'mainnet',
-        //                 registry: registries['mainnet'],
-        //                 provider: !BrowserProvider,
-        //                 signer: !BrowserProvider.getSigner(),
-        //             },
-        //             {
-        //                 name: 'sepolia',
-        //                 registry: registries['sepolia'],
-        //                 provider: !BrowserProvider,
-        //                 signer: BrowserProvider.getSigner(),
-        //             },
-        //         ],
-        //     })),
-        // }),
+        new DIDResolverPlugin({
+            resolver: new Resolver(
+              getEthrDidResolver({
+                networks: [
+                  {
+                    name: 'mainnet',
+                    registry: registries['mainnet'],
+                    provider: provider,
+                  },
+                  {
+                    name: 'sepolia',
+                    registry: registries['sepolia'],
+                    provider: provider,
+                  },
+                ],
+              })
+            ),
+          }),
         new CredentialPlugin({
             issuers: [new CredentialProviderEIP712(), new CredentialProviderEip712JWT()],
         }),
         new SelectiveDisclosure(),
     ]
 });
+// Generar un nonce
 
-// // Routes
-// app.use('/auth', authRoutes);
 
+ 
 // Define la función validatePresentation
-async function validatePresentation(agent, verifiablePresentation) {
-   
-    if (!agent) {
-        throw new Error('Agent not initialized');
-    }
 
-    // Verifica que la presentación verificable no esté vacía
-    if (!verifiablePresentation) {
-        throw new Error('No presentation selected');
-    }
-
-    // Verifica la presentación
-    const result = await agent.verifyPresentation({
-        presentation: verifiablePresentation,
-    });
-
-    // Devuelve true si la presentación es válida, false en caso contrario
-    return result.verified; 
-}
 
 /*-------------------------------------------------------------ROUTEHANDLERS------------------------------------------------------------------------ */
 //LOGIN 
@@ -189,41 +176,53 @@ app.get('/login', (req, res) => {
     req.session.nonce = nonce; // Stores nonce in user's session
     res.sendFile('login.html', { root: __dirname }); // Enviamos el HTML
 });
-app.get('/getSelectiveDisclosure', (req, res) => {
-   agent.createSelectiveDisclosureRequest({
-        data: {
-            claims: [
-                { claimType: 'alumni', essential: true },
-                { claimType: 'degree', claimValue: 'Telecom Engineer', essential: true },
-                { claimType: 'expDate', claimValue: '2024-10-23T00:00:00Z', essential: true },
-            ],
-        },
-    })
-        .then(async (JWT) => {
-            const message = await agent.handleMessage({
-                raw: JWT,
-                save: true,
-            });
-            res.status(200).json({ message: 'Selective Disclosure created successfully!', data: message });
-        })
-        .catch((err) => {
-            res.status(500).json({ message: 'Selective Disclosure could not be created.', error: err.message });
-        });
-});
+// app.get('/getSelectiveDisclosure', (req, res) => {
+//    agent.createSelectiveDisclosureRequest({
+//         data: {
+//             claims: [
+//                 { claimType: 'alumni', essential: true },
+//                 { claimType: 'degree', claimValue: 'Telecom Engineer', essential: true },
+//                 { claimType: 'expDate', claimValue: '2024-10-23T00:00:00Z', essential: true },
+//             ],
+//         },
+//     })
+//         .then(async (JWT) => {
+//             const message = await agent.handleMessage({
+//                 raw: JWT,
+//                 save: true,
+//             });
+//             res.status(200).json({ message: 'Selective Disclosure created successfully!', data: message });
+//         })
+//         .catch((err) => {
+//             res.status(500).json({ message: 'Selective Disclosure could not be created.', error: err.message });
+//         });
+// });
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
 app.post('/verifyPresentation', async (req, res) => {
 
-    const { jwt } = req.body;
-    const nonce = req.session.nonce;
+    const { jwt: verifiablePresentation } = req.body;
+    console.log('verifiablePresentation:',verifiablePresentation);
+
+    if (!verifiablePresentation) {
+        return res.status(400).json({ message: 'Verifiable presentation is missing.' });
+    }
+
+
     try {
-        const isValid = await validatePresentation(agent, jwt);
-        if (!isValid) {
-            console.log('error verifying:',isValid);
-            return res.redirect('/login');
+
+        // Paso 2: Usar Veramo para verificar la presentación
+        const result = await agent.verifyPresentation({ 
+            presentation: verifiablePresentation,
+        });
+        console.log('result:',result);
+        if (result.verified) {
+            return res.status(200).json({ message: 'Presentation is valid' });
         }
-        else{
+
+        // Si todo es correcto
+        
         // // Verificar que el nonce coincide
         // if (jwt.nonce !== nonce) {
         //     res.status(400).json({ message: 'Invalid nonce' });
@@ -244,7 +243,7 @@ app.post('/verifyPresentation', async (req, res) => {
       //  await dbConnection.query('INSERT INTO sessions (did, nonce, timestamp, exp) VALUES (?, ?, ?, ?)', [did, nonce, vpTimestamp, exp]);
         // Redirige al usuario a la página de bienvenida
         res.redirect('/welcome');
-    }
+    
     }
     catch (err) {
         console.error('Error verifying presentation:', err);

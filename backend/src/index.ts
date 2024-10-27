@@ -1,18 +1,17 @@
 // import cors from 'cors';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import express from 'express';
-import bodyParser from 'body-parser';
-import { Request, Response } from 'express';
-const port = process.env.PORT || 5000;
-import https from 'https';
+import * as bodyParser from 'body-parser';
+
 import session from 'express-session';
-import fs from 'fs';
-// import logger from 'morgan';
-import passport from 'passport';
-// import cookieParser from 'cookie-parser';
-import sqlite3 from 'sqlite3';
-import dotenv from 'dotenv';
+
+import * as passport from 'passport';
+import * as dotenv from 'dotenv';
+
+
+import { Request, Response } from 'express';
 dotenv.config();
+const port = process.env.PORT || 5000;
 // ===================== VERAMO CONSTANTS =====================
 import { createAgent, IDIDManager, IResolver, ICredentialPlugin, IDataStore, IKeyManager } from '@veramo/core';
 import { Web3KeyManagementSystem} from '@veramo/kms-web3';
@@ -35,7 +34,7 @@ import {
   VerifiablePresentation,
 } from '@veramo/core';
 import { BrowserProvider } from 'ethers';
-const BrowserProvider = require('ethers').providers.BrowserProvider;
+
 const DATABASE_FILE = 'database.sqlite';
 import { DataSource } from 'typeorm';
 
@@ -117,12 +116,12 @@ dbConnection.initialize()
           'did:ethr': new EthrDIDProvider({
             defaultKms: 'web3',
             registry: registries['mainnet'],
-            web3Provider: browserProvider,
+            web3Provider: browserProvider as any,
           }),
           'did:ethr:sepolia': new EthrDIDProvider({
             defaultKms: 'web3',
             registry: registries['sepolia'],
-            web3Provider: browserProvider,
+            web3Provider: browserProvider as any,
           }),
         },
       }),
@@ -152,6 +151,7 @@ dbConnection.initialize()
       new SelectiveDisclosure(),
     ]
   })
+  
 
 // ===================== EXPRESS APP CONFIGURATION =====================
   const app = express();
@@ -215,11 +215,6 @@ app.post('/verifyPresentation', async (req: Request, res: Response): Promise<voi
 
     const { payload } = verifiedPresentation; // Obtiene los datos de la VP
 
-    // Verificar que el nonce coincide
-    if (payload.nonce !== nonce) {
-      res.status(400).json({ message: 'Invalid nonce' });
-      return;
-    }
 
     // Verificar que el timestamp no sea demasiado antiguo (por ejemplo, no más de 5 minutos)
     const currentTimestamp = Math.floor(Date.now() / 1000);
@@ -230,7 +225,13 @@ app.post('/verifyPresentation', async (req: Request, res: Response): Promise<voi
       res.status(400).json({ message: 'Presentation timestamp is too old' });
       return;
     }
-
+     // Verificar las claims
+     const requiredClaims = ['student', 'universityName', 'expDate']; // Claims requeridas
+     const missingClaims = requiredClaims.filter(claim => !payload[claim]);
+     if (missingClaims.length > 0) {
+      res.status(400).json({ message: 'Missing claims', missingClaims });
+      return;
+    }
     // Si todo es válido, guarda el DID, nonce y timestamp en la base de datos
     const did = payload.iss; // El `iss` es el DID del emisor
     const exp = payload.exp || (currentTimestamp + FIVE_MINUTES_IN_SECONDS); // Establece un tiempo de expiración si no hay uno
