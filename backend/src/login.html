@@ -27,16 +27,10 @@
                 body: JSON.stringify({ jwt }),
             });
 
-            const data = await response.json();
-            const messageDiv = document.getElementById('message');
+          }
 
-            if (response.ok) {
-                messageDiv.innerText = '¡Login exitoso!';
-                // Redirige o realiza otra acción
-            } else {
-                messageDiv.innerText = data.message;
-            }
-        };
+
+           
     </script>
 </body>
 </html>

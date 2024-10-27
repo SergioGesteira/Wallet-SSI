@@ -164,6 +164,17 @@ const agent = createAgent({
 
  
 // Define la función validatePresentation
+function parseJWT(token) {
+    const parts = token.split('.');
+    
+    if (parts.length !== 3) {
+        throw new Error("El token no es un JWT válido.");
+    }
+
+    // Decodificar el payload
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+    return payload;
+}
 
 
 /*-------------------------------------------------------------ROUTEHANDLERS------------------------------------------------------------------------ */
@@ -176,51 +187,48 @@ app.get('/login', (req, res) => {
     req.session.nonce = nonce; // Stores nonce in user's session
     res.sendFile('login.html', { root: __dirname }); // Enviamos el HTML
 });
-// app.get('/getSelectiveDisclosure', (req, res) => {
-//    agent.createSelectiveDisclosureRequest({
-//         data: {
-//             claims: [
-//                 { claimType: 'alumni', essential: true },
-//                 { claimType: 'degree', claimValue: 'Telecom Engineer', essential: true },
-//                 { claimType: 'expDate', claimValue: '2024-10-23T00:00:00Z', essential: true },
-//             ],
-//         },
-//     })
-//         .then(async (JWT) => {
-//             const message = await agent.handleMessage({
-//                 raw: JWT,
-//                 save: true,
-//             });
-//             res.status(200).json({ message: 'Selective Disclosure created successfully!', data: message });
-//         })
-//         .catch((err) => {
-//             res.status(500).json({ message: 'Selective Disclosure could not be created.', error: err.message });
-//         });
-// });
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
 app.post('/verifyPresentation', async (req, res) => {
 
     const { jwt: verifiablePresentation } = req.body;
-    console.log('verifiablePresentation:',verifiablePresentation);
+   
 
     if (!verifiablePresentation) {
         return res.status(400).json({ message: 'Verifiable presentation is missing.' });
     }
 
-
+    
     try {
 
         // Paso 2: Usar Veramo para verificar la presentación
         const result = await agent.verifyPresentation({ 
             presentation: verifiablePresentation,
         });
-        console.log('result:',result);
-        if (result.verified) {
-            return res.status(200).json({ message: 'Presentation is valid' });
-        }
+        // console.log('Result:', JSON.stringify(result, null, 2));
+        const jwtToken = result.verifiablePresentation.jwt;
+        // console.log('vc:', jwtToken);
+        const decodedPayload = parseJWT(jwtToken);
+        console.log("Payload decodificado:", decodedPayload);
+        const verifiableCredential = decodedPayload.vp.verifiableCredential;
+        console.log("Verifiable Credentials:", verifiableCredential);
+        const decodedCredential = verifiableCredential.map(parseJWT);
+        console.log("Verifiable Credentials:", decodedCredential);
 
+        const claims = decodedCredential.map(vc => vc.vc.credentialSubject);
+        claims.forEach((claim, index) => {
+            console.log(`Claims de Credential ${index + 1}:`, JSON.stringify(claim, null, 2));
+        });
+
+        
+          
+        
+           
+            return res.status(200).json({ message: 'Presentation is valid'});
+        
+        
         // Si todo es correcto
         
         // // Verificar que el nonce coincide
