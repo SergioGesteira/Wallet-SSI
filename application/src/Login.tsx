@@ -1,11 +1,13 @@
 // application/src/Login.tsx
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { Container, Typography, TextField, Button, Paper } from '@mui/material';
 
 const Login: React.FC = () => {
-  const [verifiablePresentation, setverifiablePresentation] = useState('');
+  const [verifiablePresentation, setVerifiablePresentation] = useState('');
   const [message, setMessage] = useState('');
-
+  const navigate = useNavigate();
 
   const fetchNonce = async (): Promise<string | null> => {
     try {
@@ -19,7 +21,7 @@ const Login: React.FC = () => {
       return null;
     }
   };
-  // Manejar el envío del formulario
+
   const handleLogin = async () => {
     try {
       const nonce = await fetchNonce();
@@ -27,14 +29,16 @@ const Login: React.FC = () => {
 
       const response = await axios.post(
         'http://localhost:5000/verifyPresentation',
-        {
-          jwt: verifiablePresentation,  // Replace with actual JWT
-          nonce,
-        },
+        { jwt: verifiablePresentation, nonce },
         { withCredentials: true }
       );
 
-      setMessage(response.data.message);
+      console.log('credential:', response.data.credential);
+        console.log('claims:', response.data.claims);
+        console.log('didDocument:', response.data.didDocument);
+      if (response.status === 200) {
+        navigate('/student-web', { state: { credential: response.data.credential, claims: response.data.claims, didDocument: response.data.didDocument } });
+    }
     } catch (error) {
       if (error instanceof AxiosError) {
         setMessage(`Error: ${error.response?.data.message || 'Request failed'}`);
@@ -46,17 +50,37 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <input
-        type="text"
-        placeholder="Enter JWT Token"
-        value={verifiablePresentation}
-        onChange={(e) => setverifiablePresentation(e.target.value)}
-      />
-      <button onClick={handleLogin}>Submit</button>
-      {message && <p>{message}</p>}
-    </div>
+    <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
+      <Paper elevation={3} sx={{ padding: '2rem' }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          University Login
+        </Typography>
+        <Typography variant="body1" color="textSecondary" align="center">
+          Please paste your JWT verifiable presentation below
+        </Typography>
+        <TextField
+          label="JWT Verifiable Presentation"
+          placeholder="Paste the JWT of your verifiable presentation here"
+          multiline
+          rows={6}
+          variant="outlined"
+          fullWidth
+          value={verifiablePresentation}
+          onChange={(e) => setVerifiablePresentation(e.target.value)}
+          sx={{ marginTop: '1.5rem' }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleLogin}
+          sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+        >
+          Submit
+        </Button>
+        {message && <Typography color="error" sx={{ marginTop: '1rem' }}>{message}</Typography>}
+      </Paper>
+    </Container>
   );
 };
 

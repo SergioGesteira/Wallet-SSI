@@ -1,18 +1,17 @@
-// application/src/App.tsx
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Login from './Login';
+import StudentWeb from './StudentWeb';
 
-function App() {
+const App: React.FC = () => {
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          {/* Puedes agregar más rutas aquí en el futuro */}
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/student-web" element={<StudentWeb />} />
+      </Routes>
     </Router>
   );
-}
+};
 
 export default App;

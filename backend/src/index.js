@@ -83,7 +83,7 @@ function generateNonce() {
   }
 app.use(passport.initialize()); // we load the passport auth middleware to our express application. It should be loaded before any route.
 
-const jwtSecret = 'morosno';
+const jwtSecret = process.env.JWT_SECRET;
 console.log('jwtSecret:', jwtSecret);
 
 const opts = {
@@ -198,20 +198,17 @@ function parseJWT(token) {
 /*-------------------------------------------------------------ROUTEHANDLERS------------------------------------------------------------------------ */
 //LOGIN 
 app.get('/', (req, res) => {
-    res.send('¡Hola, mundo!'); // Respuesta para la ruta '/'
+    res.redirect('http://localhost:3000'); 
 });
 app.get('/getNonce', (req, res) => {
     const nonce = generateNonce();
     req.session.nonce = nonce;
     res.json({ nonce });
   });
-app.get('/login', (req, res) => {
- 
-    res.sendFile('login.html', { root: __dirname }); // Enviamos el HTML
-});
-app.get('/protected', passport.authenticate('VerifiablePresentation', { session: false }), (req, res) => {
-    res.status(200).json({ message: `Welcome! Your DID is ${req.user.did}` });
-});
+
+// app.get('/protected', passport.authenticate('VerifiablePresentation', { session: false }), (req, res) => {
+//     res.status(200).json({ message: `Welcome! Your DID is ${req.user.did}` });
+// });
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
@@ -242,9 +239,9 @@ app.post('/verifyPresentation', async (req, res) => {
         const jwtToken = result.verifiablePresentation.jwt;
        
         const decodedPayload = parseJWT(jwtToken);
-        console.log("Payload decodificado:", decodedPayload);
+        
         const verifiableCredential = decodedPayload.vp.verifiableCredential;
-        console.log("Verifiable Credentials:", verifiableCredential);
+       
         const decodedCredential = verifiableCredential.map(parseJWT);
         console.log("Verifiable Credentials:", decodedCredential);
 
@@ -252,13 +249,19 @@ app.post('/verifyPresentation', async (req, res) => {
         claims.forEach((claim, index) => {
             console.log(`Claims de Credential ${index + 1}:`, JSON.stringify(claim, null, 2));
         });
-
+        console.log('Claims:', JSON.stringify(claims, null, 2));
+        const didDocument = decodedCredential[0].vc.credentialSubject.id;
+        console.log('DID Document:', JSON.stringify(didDocument, null, 2));
         const hasAccess = claims.some(claim => claim.college === 'EETAC');
         if (hasAccess) {
             console.log('Access granted. Welcome!');
+            console.log('Access granted. Welcome!: ', JSON.stringify(decodedCredential));
             // Si hay acceso, permitir entrada
             return res.status(200).json({ 
                 message: `Access granted. Welcome!: ${JSON.stringify(decodedCredential[0])}`,
+                credential: decodedCredential,
+                claims: claims,
+                didDocument: didDocument,
             });
         } else {
             // Si no hay acceso, denegar entrada
