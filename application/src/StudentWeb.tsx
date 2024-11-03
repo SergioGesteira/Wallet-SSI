@@ -24,13 +24,14 @@ const StudentWeb: React.FC = () => {
   
     return (
         <Container maxWidth="md" sx={{ marginTop: '4rem', textAlign: 'center' }}>
-            <Typography variant="h5">Your Verifiable Credentials</Typography>
-            <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px', backgroundColor: '#f9f9f9', margin: '20px 0' }}>
-                <p><strong>College:</strong> {firstClaim.college}</p>
-                <p><strong>Degree:</strong> {firstClaim.degree}</p>
-                <p><strong>University:</strong> {firstClaim.university}</p>
-                <p><strong>Alumni:</strong> {firstClaim.alumni ? 'Yes' : 'No'}</p>
-            </div>
+        <Typography variant="h5">Your Verifiable Credentials</Typography>
+        <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px', backgroundColor: '#f9f9f9', margin: '20px 0' }}>
+            {Object.entries(firstClaim).map(([key, value]) => (
+                <p key={key}>
+                    <strong>{key.charAt(0).toUpperCase() + key.slice(1)}:</strong> {String(value)}
+                </p>
+            ))}
+        </div>
 
             {/* Mostrar el DID Document */}
             <Typography variant="h5">Credential</Typography>
