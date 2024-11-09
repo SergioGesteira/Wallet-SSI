@@ -49,6 +49,10 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleRedirectToCredentialApp = () => {
+    window.location.href = 'http://localhost:5000/redirectToCredentialApp';
+  };
+
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
       <Paper elevation={3} sx={{ padding: '2rem' }}>
@@ -79,6 +83,16 @@ const Login: React.FC = () => {
           Submit
         </Button>
         {message && <Typography color="error" sx={{ marginTop: '1rem' }}>{message}</Typography>}
+
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleRedirectToCredentialApp}
+          sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+        >
+        Don't have a credential yet?
+        </Button>
       </Paper>
     </Container>
   );

@@ -1,6 +1,9 @@
 // config/passportConfig.js
 import passport from 'passport';
 import { Strategy as JwtStrategy, ExtractJwt } from 'passport-jwt';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const jwtSecret = process.env.JWT_SECRET;
 const opts = {

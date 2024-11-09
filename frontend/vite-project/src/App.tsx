@@ -66,16 +66,16 @@ createAppKit({
 });
 
 function App() {
-  const [kms, setKms] = useState<Web3KeyManagementSystem | null>(null);
+  const [, setKms] = useState<Web3KeyManagementSystem | null>(null);
   const [keys, setKeys] = useState<ManagedKeyInfo[]>([]);
   const [selectedKey, setSelectedKey] = useState<ManagedKeyInfo | null>(null);
-  const [agent,setAgent] = useState<ConfiguredAgent | null>(null);
+  const [agent, setAgent] = useState<ConfiguredAgent | null>(null);
   const [selectedDidDocument, setSelectedDidDocument] = useState<DIDDocument | null>(null);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
   const [verifiableCredential, setVerifiableCredential] = useState<VerifiableCredential | null>(null);
   const [verifiablePresentation, setVerifiablePresentation] = useState<VerifiablePresentation | null>(null);
   const [browserProvider, setBrowserProvider] = useState<BrowserProvider | null>(null);
-  const [signer, setSigner] = useState<Signer | null>(null);
+  const [, setSigner] = useState<Signer | null>(null);
   const [delegateAddress, setDelegateAddress] = useState<string>('');
   const [expirationTime, setExpirationTime] = useState(3600);
   const [revokeDelegateAddress, setRevokeDelegateAddress] = useState<string>('');
