@@ -1,4 +1,4 @@
-// services/agentService.js
+// services/veramoAgent.js
 // ===================== VERAMO CONSTANTS =====================
 import { createAgent } from '@veramo/core';
 //import { IDIDManager, IResolver, ICredentialPlugin, IDataStore, IKeyManager, TAgent } from '@veramo/core';

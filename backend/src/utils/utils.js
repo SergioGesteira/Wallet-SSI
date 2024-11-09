@@ -1,7 +1,9 @@
 // utils/utils.js
 import crypto from 'crypto';
 
+
 export const generateNonce = () => crypto.randomBytes(16).toString('hex');
+
 
 export const parseJWT = (token) => {
     const parts = token.split('.');
