@@ -2,17 +2,16 @@ import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, TextField, Button, Paper, CircularProgress } from '@mui/material';
-import { toast, ToastContainer } from 'react-toastify'; // Importar React Toastify
-import 'react-toastify/dist/ReactToastify.css'; // Importar estilos de Toastify
-
+import { toast, ToastContainer } from 'react-toastify'; // Import React Toastify
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify styles
 
 const Login: React.FC = () => {
-  const [verifiablePresentation, setVerifiablePresentation] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFormVisible, setIsFormVisible] = useState(false); // Control para mostrar el formulario
+  const [verifiablePresentation, setVerifiablePresentation] = useState(''); // Stores the user's verifiable presentation JWT
+  const [isLoading, setIsLoading] = useState(false); // Loading state for UI feedback
+  const [isFormVisible, setIsFormVisible] = useState(false); // Controls visibility of the login form
   const navigate = useNavigate();
 
-  // Función para obtener el nonce
+  // Function to fetch a unique nonce from the server
   const fetchNonce = async (): Promise<string | null> => {
     try {
       const response = await axios.get<{ nonce: string }>('http://localhost:5000/getNonce', {
@@ -21,43 +20,44 @@ const Login: React.FC = () => {
       return response.data.nonce;
     } catch (error) {
       console.error('Error fetching nonce:', error);
-      toast.error('Error fetching nonce. Please try again later.'); // Notificación de error
+      toast.error('Error fetching nonce. Please try again later.'); // Error notification
       return null;
     }
   };
 
-  // Manejo del login
+  // Handles the login process
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      const nonce = await fetchNonce();
+      const nonce = await fetchNonce(); // Fetch nonce from server
       if (!nonce) return;
 
+      // Send the JWT verifiable presentation and nonce to server for verification
       const response = await axios.post(
         'http://localhost:5000/verifyPresentation',
         { jwt: verifiablePresentation, nonce },
         { withCredentials: true }
       );
-            if (response.status === 200) {
 
-      
-        
-          toast.success('Access granted! Welcome.'); // Notificación de éxito
-          navigate('/student-web', { state: { credential: response.data.credential, claims: response.data.claims, didDocument: response.data.didDocument } });
+      // If the server returns a successful response, store the session token in local storage
+      if (response.status === 200) {
+        const token = response.data.token;
+        localStorage.setItem('jwtToken', token); // Store JWT token in local storage
+        toast.success('Access granted! Welcome.'); // Success notification
+        navigate('/student-web', { state: { credential: response.data.credential, claims: response.data.claims, didDocument: response.data.didDocument } });
       }
     } catch (error) {
       if (error instanceof AxiosError) {
-        toast.error(error.response?.data.message || 'Request failed. Please try again later.'); // Notificación de error
+        toast.error(error.response?.data.message || 'Request failed. Please try again later.'); // Error notification
       } else {
         toast.error('An unexpected error occurred. Please try again later.');
       }
-      // console.error('Error sending credential:', error);
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Reset loading state
     }
   };
 
-  // Redirigir al usuario para obtener una credencial
+  // Redirects the user to the credential app to obtain a verifiable credential
   const handleRedirectToCredentialApp = () => {
     window.location.href = 'http://localhost:5000/redirectToCredentialApp';
   };
@@ -72,13 +72,13 @@ const Login: React.FC = () => {
           {isFormVisible ? 'Please paste your JWT verifiable presentation below' : 'Click to login with your verifiable credential'}
         </Typography>
 
-        {/* Mostrar el botón para iniciar sesión y luego el formulario */}
+        {/* Show the login button initially, then reveal the form on click */}
         {!isFormVisible ? (
           <Button
             variant="contained"
             color="primary"
             fullWidth
-            onClick={() => setIsFormVisible(true)} // Revela el formulario
+            onClick={() => setIsFormVisible(true)} // Reveal the form
             sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
           >
             Login with Verifiable Credential
@@ -108,7 +108,7 @@ const Login: React.FC = () => {
           </>
         )}
 
-        {/* Mostrar el spinner de carga */}
+        {/* Show loading spinner during credential verification */}
         {isLoading && (
           <div style={{ textAlign: 'center', marginTop: '1rem' }}>
             <CircularProgress />
@@ -118,7 +118,7 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        {/* Botón para redirigir al usuario a la aplicación de credenciales */}
+        {/* Button to redirect the user to the credential app */}
         <Button
           variant="contained"
           color="primary"
@@ -130,7 +130,7 @@ const Login: React.FC = () => {
         </Button>
       </Paper>
 
-      {/* Contenedor para las notificaciones */}
+      {/* Notification container */}
       <ToastContainer />
     </Container>
   );

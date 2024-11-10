@@ -1,25 +1,27 @@
 import React, { useEffect } from 'react';
 import { Container, Typography, Card } from '@mui/material';
 import { useLocation } from 'react-router-dom';
-import { toast } from 'react-toastify'; // Importa React Toastify
-import 'react-toastify/dist/ReactToastify.css'; // Importa los estilos de Toastify
+import { toast } from 'react-toastify'; // Import React Toastify for notifications
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify styles
 
 const StudentWeb: React.FC = () => {
     const location = useLocation();
-    const credential = location.state?.credential;
-    const claims = location.state?.claims; 
+    const credential = location.state?.credential; // Retrieve credential data from navigation state
+    const claims = location.state?.claims; // Retrieve claims from navigation state
 
-    // Manejo de claims
+    // Extract the first claim if available
     const firstClaim = Array.isArray(claims) && claims.length > 0 ? claims[0] : null;
 
+    // Show a notification based on whether claim data is available
     useEffect(() => {
         if (!firstClaim) {
-            toast.error('No credential data available.'); // Notificación de error si no hay datos
+            toast.error('No credential data available.'); // Show error if no claim data
         } else {
-            toast.success('Credential data loaded successfully.'); // Notificación de éxito si los datos están disponibles
+            toast.success('Credential data loaded successfully.'); // Success notification if data is available
         }
     }, [firstClaim]);
 
+    // Render message if no credential data is available
     if (!firstClaim) {
         return (
             <Container maxWidth="md" sx={{ marginTop: '4rem', textAlign: 'center' }}>
@@ -30,7 +32,10 @@ const StudentWeb: React.FC = () => {
 
     return (
         <Container maxWidth="md" sx={{ marginTop: '4rem', textAlign: 'center' }}>
+            {/* Display header for credentials section */}
             <Typography variant="h5">Your Verifiable Credentials</Typography>
+
+            {/* Display each claim as key-value pairs */}
             <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '10px', backgroundColor: '#f9f9f9', margin: '20px 0' }}>
                 {Object.entries(firstClaim).map(([key, value]) => (
                     <p key={key}>
@@ -39,7 +44,7 @@ const StudentWeb: React.FC = () => {
                 ))}
             </div>
 
-            {/* Mostrar el DID Document */}
+            {/* Display the full credential in JSON format */}
             <Typography variant="h5">Credential</Typography>
             <Card variant="outlined" sx={{ margin: '20px 0', padding: '20px', backgroundColor: '#f9f9f9' }}>
                 <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
