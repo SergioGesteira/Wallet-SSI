@@ -57,10 +57,10 @@ const Login: React.FC = () => {
     }
   };
 
-  // Redirects the user to the credential app to obtain a verifiable credential
-  const handleRedirectToCredentialApp = () => {
-    window.location.href = 'http://localhost:5000/redirectToCredentialApp';
-  };
+    // Redirects the user to the credential app to obtain a verifiable credential
+    const handleRedirectToCredentialApp = () => {
+      navigate('/university-issue'); 
+    };
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>

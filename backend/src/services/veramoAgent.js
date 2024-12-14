@@ -1,5 +1,6 @@
 // services/veramoAgent.js
-
+import { config } from 'dotenv';
+config(); // Esto carga las variables de entorno desde .env
 // ===================== VERAMO CONSTANTS =====================
 import { createAgent } from '@veramo/core';
 //import { IDIDManager, IResolver, ICredentialPlugin, IDataStore, IKeyManager, TAgent } from '@veramo/core';
@@ -24,26 +25,6 @@ const provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
 const kms = new Web3KeyManagementSystem({ eip1193: provider });
 const keys = [];
 
-// Import existing keys as DIDs in Veramo
-keys.forEach(async (key) => {
-    const did = `did:ethr:sepolia:${key.meta?.account.address}`;
-    const importedDid = await agent.didManagerImport({
-        did,
-        controllerKeyId: key.kid,
-        provider: 'did:ethr:sepolia',
-        keys: [
-            {
-                kid: key.kid,
-                type: 'Secp256k1',
-                kms: 'web3',
-                publicKeyHex: key.publicKeyHex,
-                meta: key.meta,
-                privateKeyHex: '',
-            },
-        ],
-    });
-    console.log('DID created: ', importedDid);
-});
 
 // Specify registry addresses for mainnet and sepolia networks
 const registries = {
@@ -56,7 +37,7 @@ const didStore = new MemoryDIDStore();
 const keyStore = new MemoryKeyStore();
 
 // Create the Veramo agent with configured plugins
-const agent = createAgent({
+export const agent = createAgent({
     plugins: [
         // Key management using the Web3 KMS
         new KeyManager({
@@ -109,6 +90,33 @@ const agent = createAgent({
     ]
 });
 
+async function importUniversityDID() {
+    try {
+        const privateKey = process.env.PRIVATE_KEY || '667bd3c940a440a36d9d7a8d14d71a79caf80197c8c13770dfefad367a5e5d56'; 
+      await agent.didManagerImport({
+        did: 'did:ethr:sepolia:0x0EbbDF0f0518EBD772D81B3bdA684e3F67917A03',
+        provider: 'did:ethr:sepolia',
+        keys: [
+          {
+            kid: 'did:ethr:sepolia:0x0EbbDF0f0518EBD772D81B3bdA684e3F67917A03#controller',
+            type: 'Secp256k1',
+            privateKeyHex: '667bd3c940a440a36d9d7a8d14d71a79caf80197c8c13770dfefad367a5e5d56',
+            kms: 'web3', 
+          },
+        ],
+        services: [], // Agrega servicios si es necesario
+      });
+  
+      console.log('DID de la universidad importado exitosamente.');
+    } catch (error) {
+      console.error('Error importando el DID:', error);
+    }
+  }
+  
+  // Llama a la función al inicializar el servidor
+  importUniversityDID();
+  
+
 // Function to verify a verifiable presentation
 export const verifyPresentation = async (verifiablePresentation) => {
     const result = await agent.verifyPresentation({ presentation: verifiablePresentation });
@@ -127,4 +135,4 @@ export const verifyPresentation = async (verifiablePresentation) => {
     return { credential: decodedCredential, claims, didDocument, hasAccess };
 };
 
-export default { verifyPresentation };
+export default { verifyPresentation , agent};
