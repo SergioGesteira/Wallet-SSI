@@ -1,8 +1,18 @@
 import React, { useState, useEffect } from 'react';
+
+
 import axios from 'axios';
 import { Container, Typography, Button, Paper, List, ListItem, ListItemText, ListItemSecondaryAction } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ethers } from 'ethers';
+
+// Extend the Window interface to include the ethereum property
+declare global {
+  interface Window {
+    ethereum: any;
+  }
+}
 
 const AdminPanel: React.FC = () => {
   const [pendingDIDs, setPendingDIDs] = useState<string[]>([]);
@@ -22,9 +32,33 @@ const AdminPanel: React.FC = () => {
     fetchPendingDIDs();
   }, []);
 
-  const handleApprove = async (did: string) => {
+  const connectToMetamask = async () => {
+    if (!window.ethereum) {
+      toast.error('Metamask no está instalado. Por favor, instala Metamask.');
+      return null;
+    }
+
     try {
-      const res = await axios.post('http://localhost:5000/university/approveDid', { did });
+      console.log('Solicitando cuentas...');
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []); // Solicita las cuentas al usuario
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+      console.log('Dirección de la cuenta:', address);
+      return address;
+    } catch (error) {
+      console.error('Error al conectar con Metamask:', error);
+      toast.error('Error al conectar con Metamask. Por favor, intenta nuevamente.');
+      return null;
+    }
+  };
+  const handleApprove = async (did: string) => {
+    const address = await connectToMetamask();
+    if (!address) {
+      return;
+    }
+    try {
+      const res = await axios.post('http://localhost:5000/university/approveDid', { did, address });
       setMessage(res.data.message);
       setPendingDIDs(pendingDIDs.filter(d => d !== did));
       toast.success(`DID ${did} approved successfully.`);
@@ -48,30 +82,39 @@ const AdminPanel: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
-      <Paper elevation={3} sx={{ padding: '2rem' }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Admin Panel
-        </Typography>
-        {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
-        <List>
-          {pendingDIDs.map(did => (
-            <ListItem key={did}>
-              <ListItemText primary={did} />
-              <ListItemSecondaryAction>
-                <Button variant="contained" color="primary" onClick={() => handleApprove(did)} sx={{ marginRight: '1rem' }}>
-                  Approve
-                </Button>
-                <Button variant="contained" color="secondary" onClick={() => handleReject(did)}>
-                  Reject
-                </Button>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
-      </Paper>
-      <ToastContainer />
-    </Container>
-  );
+    <Paper elevation={3} sx={{ padding: '2rem' }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        Admin Panel
+      </Typography>
+      {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
+      <List>
+        {pendingDIDs.map(did => (
+          <ListItem key={did}>
+            <ListItemText primary={did} />
+            <ListItemSecondaryAction>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleApprove(did)}
+                sx={{ marginRight: '1rem' }}
+              >
+                Approve
+              </Button>
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={() => handleReject(did)}
+              >
+                Reject
+              </Button>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </List>
+    </Paper>
+    <ToastContainer />
+  </Container>
+);
 };
 
 export default AdminPanel;

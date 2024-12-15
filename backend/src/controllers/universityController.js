@@ -17,7 +17,7 @@ export const handleSendDid = (req, res) => {
 
 // Ruta para aprobar un DID
 export const approveDid = async (req, res) => {
-  const { did } = req.body;
+  const { did, address } = req.body;
 
   if (!did || !pendingDIDs.includes(did)) {
     return res.status(400).json({ success: false, message: 'DID not found in pending list' });
