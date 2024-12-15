@@ -124,7 +124,7 @@ export async function importUniversityDID() {
 
 
 
-        const privateKey = process.env.PRIVATE_KEY || '667bd3c940a440a36d9d7a8d14d71a79caf80197c8c13770dfefad367a5e5d56'; 
+        const privateKey = process.env.PRIVATE_KEY || ''; 
 
            // Import the DID of the university
            const didImportResult = await agent.didManagerImport({
@@ -132,7 +132,7 @@ export async function importUniversityDID() {
             keys: [
                 {
                     type: 'Secp256k1',
-                    privateKeyHex: '667bd3c940a440a36d9d7a8d14d71a79caf80197c8c13770dfefad367a5e5d56',
+                    privateKeyHex: '',
                     kms: 'web3',
                     kid: 'did:ethr:sepolia:0x0EbbDF0f0518EBD772D81B3bdA684e3F67917A03#controller',
                     meta: {
