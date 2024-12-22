@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Container, Typography, Button, Paper, List, ListItem, ListItemText, ListItemSecondaryAction } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { BrowserProvider } from 'ethers';
+import { BrowserProvider, JsonRpcSigner } from 'ethers';
 import { ConfiguredAgent } from './components/Utils'; 
 
 import { ManagedKeyInfo , DIDResolutionResult, DIDDocument, VerifiableCredential} from '@veramo/core';
@@ -28,6 +28,7 @@ import CredentialValidator from './components/CredentialValidator';
 import PresentationCreator from './components/PresentationCreator';
 import PresentationDisplay from './components/PresentationDisplay';
 import PresentationValidator from './components/PresentationValidator';
+import WalletConnection from './components/WalletConnection';
 import { getDidDocument } from './components/Utils';
 
 declare global {
@@ -47,8 +48,10 @@ const AdminPanel: React.FC = () => {
   const [verifiablePresentation, setVerifiablePresentation] = useState<any>(null);
   const [keys, setKeys] = useState<ManagedKeyInfo[]>([]);
   const [kms, setKms] = useState<Web3KeyManagementSystem | null>(null);
+  const [browserProvider, setBrowserProvider] = useState<BrowserProvider | null>(null);
+  const [signer, setSigner] = useState<JsonRpcSigner | null>(null);
+  const [approvedDid, setApprovedDid] = useState<string | null>(null);
 
-  //const fixedAlgorithm = "EthTypedDataSignature";
 
   useEffect(() => {
     const fetchPendingDIDs = async () => {
@@ -66,39 +69,39 @@ const AdminPanel: React.FC = () => {
 
 
 
-  const connectToMetamask = async () => {
-    if (!window.ethereum) {
-      toast.error('Metamask no está instalado. Por favor, instala Metamask.');
-      return null;
-    }
+  // const connectToMetamask = async () => {
+  //   if (!window.ethereum) {
+  //     toast.error('Metamask no está instalado. Por favor, instala Metamask.');
+  //     return null;
+  //   }
 
-    try {
-      console.log('Solicitando cuentas...');
-      const provider = new BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);  // Solicita las cuentas al usuario
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
+  //   try {
+  //     console.log('Solicitando cuentas...');
+  //     const provider = new BrowserProvider(window.ethereum);
+  //     await provider.send("eth_requestAccounts", []);  // Solicita las cuentas al usuario
+  //     const signer = await provider.getSigner();
+  //     const address = await signer.getAddress();
 
-      const kms = new Web3KeyManagementSystem({ provider });
-      setKms(kms);
+  //     const kms = new Web3KeyManagementSystem({ provider });
+  //     setKms(kms);
 
   
-      const listedKeys = await kms.listKeys();
-      if (listedKeys.length === 0) {
-        throw new Error('No keys found');
-      }
-      setKeys(listedKeys);
-      setSelectedKey(listedKeys[0]);
+  //     const listedKeys = await kms.listKeys();
+  //     if (listedKeys.length === 0) {
+  //       throw new Error('No keys found');
+  //     }
+  //     setKeys(listedKeys);
+  //     setSelectedKey(listedKeys[0]);
      
-      console.log('Dirección de la cuenta:', address);
+  //     console.log('Dirección de la cuenta:', address);
       
    
-    } catch (error) {
-      console.error('Error al conectar con Metamask:', error);
-      toast.error('Error al conectar con Metamask. Por favor, intenta nuevamente.');
-      return null;
-    }
-  };
+  //   } catch (error) {
+  //     console.error('Error al conectar con Metamask:', error);
+  //     toast.error('Error al conectar con Metamask. Por favor, intenta nuevamente.');
+  //     return null;
+  //   }
+  // };
 
 
   const importDids = useCallback(async () => {
@@ -242,6 +245,7 @@ const AdminPanel: React.FC = () => {
       const res = await axios.post('http://localhost:5000/university/approveDid', { did });
       setMessage(res.data.message);
       setPendingDIDs(pendingDIDs.filter((d) => d !== did));
+      setApprovedDid(did);
       toast.success(`DID ${did} approved successfully.`);
 
       // if (!agent) {
@@ -345,18 +349,24 @@ return (
         Admin Panel
       </Typography>
       {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
-      <Button variant="contained" color="primary" onClick={connectToMetamask}>
-        Connect to MetaMask
-      </Button>
-      <div style={{ marginBottom: '20px' }}></div>
-      {selectedDidDocument != null && <DidDisplay selectedDidDocument={selectedDidDocument} />}
-      {selectedDidDocument != null && (
-        <CredentialIssuer
-          agent={agent}
-          selectedKey={selectedKey}
-          setSelectedAlgorithm={setSelectedAlgorithm}
-          setVerifiableCredential={setVerifiableCredential} did={''}        />
-      )}
+      <WalletConnection
+          setKms={setKms}
+          setKeys={setKeys}
+          setBrowserProvider={setBrowserProvider}
+          setSigner={setSigner}
+          setSelectedKey={setSelectedKey}
+        />
+        <div style={{ marginBottom: '20px' }}></div>
+        {selectedDidDocument != null && <DidDisplay selectedDidDocument={selectedDidDocument} />}
+        {approvedDid && (
+          <CredentialIssuer
+            agent={agent}
+            selectedKey={selectedKey}
+            setSelectedAlgorithm={setSelectedAlgorithm}
+            setVerifiableCredential={setVerifiableCredential}
+            did={approvedDid}
+          />
+        )}
       {verifiableCredential != null && <CredentialDisplay verifiableCredential={verifiableCredential} />}
       {verifiableCredential != null && (
         <CredentialValidator agent={agent} verifiableCredential={verifiableCredential} />

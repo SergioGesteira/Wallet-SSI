@@ -16,11 +16,11 @@ const CredentialIssuer: React.FC<CredentialIssuerProps> = ({
     setVerifiableCredential,
     did,
   }) => {
-    const [inputSubject, setInputSubject] = useState(did); // Usa el DID como inputSubject
-    const [signatureType, setSignatureType] = useState('');
+    const [inputSubject, setInputSubject] = useState(did); //  Update the inputSubject when the DID changes
+    const [signatureType, setSignatureType] = useState('EthTypedDataSignature');
     useEffect(() => {
-      setInputSubject(did); // Actualiza el inputSubject cuando el DID cambie
-    }, [did]);// Este será el sujeto de la credencial
+      setInputSubject(did); 
+    }, [did]);
   
     // Simplificación, solo agregamos un claim fijo
     const claims = [{ key: 'college', value: 'EETAC' }];
@@ -28,21 +28,28 @@ const CredentialIssuer: React.FC<CredentialIssuerProps> = ({
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setInputSubject(event.target.value);
     };
-  
+   
     const handleIssueCredential = async () => {
+  
+
       if (!agent || !selectedKey || !inputSubject|| !signatureType) {
         setSignatureType('EthTypedDataSignature');
         console.error('Missing required fields');
         return;
       }
-      setSignatureType('EthTypedDataSignature');
-     
-     
+    
       // Crear el sujeto de la credencial con un claim fijo
       const credentialSubject = { id: inputSubject, ...Object.fromEntries(claims.map(c => [c.key, c.value])) };
   
-      const credential = await issueCredential(agent, selectedKey, credentialSubject, signatureType);
-      setVerifiableCredential(credential);
+      try {
+        const credential = await issueCredential(agent, selectedKey, credentialSubject, signatureType);
+        setVerifiableCredential(credential);
+        setSelectedAlgorithm(signatureType);
+        console.log('Credential issued:', credential);
+      } catch (error) {
+        console.error('Error issuing credential:', error);
+      }
+      
     };
   
     return (

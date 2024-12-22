@@ -3,8 +3,7 @@ import axios from 'axios';
 import { Container, Typography, TextField, Button, Paper } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import CredentialIssuer from './components/CredentialIssuer'; 
-import { VerifiableCredential } from '@veramo/core';
+
 
 const UniversityIssue: React.FC = () => {
   const [did, setDid] = useState<string>('');
@@ -58,11 +57,7 @@ const UniversityIssue: React.FC = () => {
         )}
       </Paper>
       <ToastContainer />
-      <CredentialIssuer did={did} agent={null} selectedKey={null} setSelectedAlgorithm={function (value: React.SetStateAction<string | null>): void {
-        throw new Error('Function not implemented.');
-      } } setVerifiableCredential={function (value: React.SetStateAction<VerifiableCredential | null>): void {
-        throw new Error('Function not implemented.');
-      } } /> {/* Pasa el DID al componente CredentialIssuer */}
+      
     </Container>
   );
 };

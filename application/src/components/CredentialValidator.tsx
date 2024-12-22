@@ -10,6 +10,7 @@ interface CredentialValidatorProps {
 const CredentialValidator: React.FC<CredentialValidatorProps> = ({ agent, verifiableCredential }) => {
   const [credentialValidated, setCredentialValidated] = useState<string>('');
   const [isValidating, setIsValidating] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleValidateCredential = async () => {
     if (!agent) {
@@ -23,11 +24,16 @@ const CredentialValidator: React.FC<CredentialValidatorProps> = ({ agent, verifi
     }
 
     setIsValidating(true);
+    setError(null);
+
     try {
+      console.log('Validating credential:', verifiableCredential);
       const result = await validateCredential(agent, verifiableCredential);
+      console.log('Validation result:', result);
       setCredentialValidated(result ? 'Credential is valid' : 'Credential is not valid');
     } catch (error) {
       console.error('Validation error:', error);
+      setError('Error occurred during validation');
       setCredentialValidated('Error occurred during validation');
     } finally {
       setIsValidating(false);
@@ -53,6 +59,11 @@ const CredentialValidator: React.FC<CredentialValidatorProps> = ({ agent, verifi
           }`}
         >
           <p className="font-semibold">{credentialValidated}</p>
+          </div>
+      )}
+      {error && (
+        <div className="mt-4 p-4 bg-red-100 text-red-800 rounded-md">
+          <p className="font-semibold">Error: {error}</p>
         </div>
       )}
     </div>

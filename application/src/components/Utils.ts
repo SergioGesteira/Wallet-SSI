@@ -77,10 +77,11 @@ async function validateCredential(
   if (!verifiableCredential) {
     throw new Error('No credential selected');
   }
-
+  console.log('Verifying credential:', verifiableCredential);
   const result = await agent.verifyCredential({
     credential: verifiableCredential,
   });
+  console.log('Verification result:', result);
   return result.verified;
 }
 
