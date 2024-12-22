@@ -4,9 +4,9 @@ import { Container, Typography, Button, Paper, List, ListItem, ListItemText, Lis
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { BrowserProvider } from 'ethers';
-import { ConfiguredAgent, issueCredential } from './components/Utils'; 
+import { ConfiguredAgent } from './components/Utils'; 
 
-import { ManagedKeyInfo } from '@veramo/core';
+import { ManagedKeyInfo , DIDResolutionResult, DIDDocument, VerifiableCredential} from '@veramo/core';
 //import { createVeramoAgent } from './components/VeramoAgent'; 
 import { Web3KeyManagementSystem } from '@veramo/kms-web3';
 
@@ -21,6 +21,14 @@ import { Resolver } from 'did-resolver';
 import { CredentialPlugin } from '@veramo/credential-w3c';
 import { CredentialProviderEIP712 } from '@veramo/credential-eip712';
 import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
+import DidDisplay from './components/DidDisplay';
+import CredentialIssuer from './components/CredentialIssuer';
+import CredentialDisplay from './components/CredentialDisplay';
+import CredentialValidator from './components/CredentialValidator';
+import PresentationCreator from './components/PresentationCreator';
+import PresentationDisplay from './components/PresentationDisplay';
+import PresentationValidator from './components/PresentationValidator';
+import { getDidDocument } from './components/Utils';
 
 declare global {
   interface Window {
@@ -32,12 +40,15 @@ const AdminPanel: React.FC = () => {
   const [pendingDIDs, setPendingDIDs] = useState<string[]>([]);
   const [message, setMessage] = useState<string>('');
   const [agent, setAgent] = useState<ConfiguredAgent| null>(null);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string>('EthTypedDataSignature');
-  const [issuedCredential, setIssuedCredential] = useState<any>(null);
+  const [selectedKey, setSelectedKey] = useState<ManagedKeyInfo | null>(null);
+  const [verifiableCredential, setVerifiableCredential] = useState<VerifiableCredential | null>(null);
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState<string | null>(null);
+  const [selectedDidDocument, setSelectedDidDocument] = useState<DIDDocument | null>(null);
   const [verifiablePresentation, setVerifiablePresentation] = useState<any>(null);
   const [keys, setKeys] = useState<ManagedKeyInfo[]>([]);
   const [kms, setKms] = useState<Web3KeyManagementSystem | null>(null);
 
+  //const fixedAlgorithm = "EthTypedDataSignature";
 
   useEffect(() => {
     const fetchPendingDIDs = async () => {
@@ -52,6 +63,42 @@ const AdminPanel: React.FC = () => {
 
     fetchPendingDIDs();
   }, []);
+
+
+
+  const connectToMetamask = async () => {
+    if (!window.ethereum) {
+      toast.error('Metamask no está instalado. Por favor, instala Metamask.');
+      return null;
+    }
+
+    try {
+      console.log('Solicitando cuentas...');
+      const provider = new BrowserProvider(window.ethereum);
+      await provider.send("eth_requestAccounts", []);  // Solicita las cuentas al usuario
+      const signer = await provider.getSigner();
+      const address = await signer.getAddress();
+
+      const kms = new Web3KeyManagementSystem({ provider });
+      setKms(kms);
+
+  
+      const listedKeys = await kms.listKeys();
+      if (listedKeys.length === 0) {
+        throw new Error('No keys found');
+      }
+      setKeys(listedKeys);
+      setSelectedKey(listedKeys[0]);
+     
+      console.log('Dirección de la cuenta:', address);
+      
+   
+    } catch (error) {
+      console.error('Error al conectar con Metamask:', error);
+      toast.error('Error al conectar con Metamask. Por favor, intenta nuevamente.');
+      return null;
+    }
+  };
 
 
   const importDids = useCallback(async () => {
@@ -90,6 +137,7 @@ const AdminPanel: React.FC = () => {
     const didStore = new MemoryDIDStore();
     const keyStore = new MemoryKeyStore();
     const browserProvider = new BrowserProvider(window.ethereum);
+
     const registries = {
       mainnet: '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
       sepolia: '0x03d5003bf0e79c5f5223588f347eba39afbc3818',
@@ -150,7 +198,7 @@ const AdminPanel: React.FC = () => {
   
     console.log('Veramo Agent creado');
     setAgent(veramoAgent);
-  }, [kms]);
+  }, [kms,setAgent]);
 
 
 
@@ -164,144 +212,119 @@ const AdminPanel: React.FC = () => {
   }, [kms, createVeramoAgent, agent, importDids]);
 
 
+  useEffect(() => {
+    const resolve = async () => {
+      if (selectedKey && agent) {
+        const data: DIDResolutionResult = await getDidDocument(agent, selectedKey);
+        console.log('DID Document: ', data.didDocument);
+        setSelectedDidDocument(data.didDocument);
+      }
+    };
+    resolve();
+  }, [selectedKey, agent]);
+
+  
 
 
-  const connectToMetamask = async () => {
-    if (!window.ethereum) {
-      toast.error('Metamask no está instalado. Por favor, instala Metamask.');
-      return null;
-    }
-
-    try {
-      console.log('Solicitando cuentas...');
-      const provider = new BrowserProvider(window.ethereum);
-      await provider.send("eth_requestAccounts", []);  // Solicita las cuentas al usuario
-      const signer = await provider.getSigner();
-      const address = await signer.getAddress();
-      const kms = new Web3KeyManagementSystem({ provider });
-      const listedKeys = await kms.listKeys();
-      //const veramoAgent = await createVeramoAgent();
-      setKeys(listedKeys);
-     
-      console.log('Dirección de la cuenta:', address);
-      return { provider, signer, address , listedKeys };
-        // Inicializar el agente de Veramo con Metamask
-   
-    } catch (error) {
-      console.error('Error al conectar con Metamask:', error);
-      toast.error('Error al conectar con Metamask. Por favor, intenta nuevamente.');
-      return null;
-    }
-  };
-
-
-
-
-  // Función que se ejecuta cuando el usuario aprueba un DID
+  // User approves DID
   const handleApprove = async (did: string) => {
-    const connection = await connectToMetamask();
-    if (!connection) {
-      return;
-    }
-    const { address, listedKeys } = connection;
-
-    // Crea el agente de Veramo con la información de conexión
+   
     try {
    
       await importDids(); 
 
-      const selectedKey = listedKeys[0]; // Seleccionar la primera clave
+      const selectedKey = keys[0]; 
       if (!selectedKey) {
         throw new Error('No managed key found for the selected agent.');
       }
 
-        // Aprobar el DID
-      const res = await axios.post('http://localhost:5000/university/approveDid', { did, address });
+        // Approve DID
+      const res = await axios.post('http://localhost:5000/university/approveDid', { did });
       setMessage(res.data.message);
       setPendingDIDs(pendingDIDs.filter((d) => d !== did));
       toast.success(`DID ${did} approved successfully.`);
 
-      if (!agent) {
-        toast.error('Agent is not initialized.');
-        return;
-      }
+      // if (!agent) {
+      //   toast.error('Agent is not initialized.');
+      //   return;
+      // }
       
-      // Emitir una credencial verificable
-      const credential = await issueCredential(
-        agent,
-        selectedKey,
-        { id: did }, // Sujeto de la credencial
-        selectedAlgorithm
-      );
+      // // Issue credential
+      // const credential = await issueCredential(
+      //   agent,
+      //   selectedKey,
+      //   { id: did }, // Subject of the credential
+      //   fixedAlgorithm
+      // );
 
-      setIssuedCredential(credential);
-      toast.success(`Credential issued for DID ${did}.`);
+      // setVerifiableCredential(credential);
+      // toast.success(`Credential issued for DID ${did}.`);
     } catch (error) {
       console.error('Error approving DID or issuing credential:', error);
       toast.error('Error approving DID or issuing credential. Please try again later.');
     }
   };
 
-  const handleCreatePresentation = async () => {
-    if (!issuedCredential) {
-      toast.error('No credential available to create presentation.');
-      return;
-    }
+  // const handleCreatePresentation = async () => {
+  //   if (!issuedCredential) {
+  //     toast.error('No credential available to create presentation.');
+  //     return;
+  //   }
 
-    try {
+  //   try {
 
-      if (!agent) {
-        toast.error('Agent is not initialized.');
-        return;
-      }
+  //     if (!agent) {
+  //       toast.error('Agent is not initialized.');
+  //       return;
+  //     }
       
-      const presentation = await agent.createVerifiablePresentation({
-        presentation: {
-          context: "https://www.w3.org/2018/credentials/v1",
-          type: ["VerifiablePresentation"],
-          holder: issuedCredential.issuer,
-          verifiableCredential: [issuedCredential]
-        },
-        proofFormat: 'EthTypedDataSignature',
-      });
+  //     const presentation = await agent.createVerifiablePresentation({
+  //       presentation: {
+  //         context: "https://www.w3.org/2018/credentials/v1",
+  //         type: ["VerifiablePresentation"],
+  //         holder: issuedCredential.issuer,
+  //         verifiableCredential: [issuedCredential]
+  //       },
+  //       proofFormat: 'EthTypedDataSignature',
+  //     });
 
-      setVerifiablePresentation(presentation);
-      toast.success('Presentation created successfully.');
-    } catch (error) {
-      console.error('Error creating presentation:', error);
-      toast.error('Error creating presentation. Please try again later.');
-    }
-  };
+  //     setVerifiablePresentation(presentation);
+  //     toast.success('Presentation created successfully.');
+  //   } catch (error) {
+  //     console.error('Error creating presentation:', error);
+  //     toast.error('Error creating presentation. Please try again later.');
+  //   }
+  // };
 
-  const handleValidatePresentation = async () => {
-    if (!verifiablePresentation) {
-      toast.error('No presentation available to validate.');
-      return;
-    }
+  // const handleValidatePresentation = async () => {
+  //   if (!verifiablePresentation) {
+  //     toast.error('No presentation available to validate.');
+  //     return;
+  //   }
 
-    try {
-      if (!agent) {
-        toast.error('Agent is not initialized.');
-        return;
-      }
+  //   try {
+  //     if (!agent) {
+  //       toast.error('Agent is not initialized.');
+  //       return;
+  //     }
       
-      const validation = await agent.verifyPresentation({
-        presentation: verifiablePresentation,
-        proofFormat: 'EthTypedDataSignature',
-      });
+  //     const validation = await agent.verifyPresentation({
+  //       presentation: verifiablePresentation,
+  //       proofFormat: 'EthTypedDataSignature',
+  //     });
 
-      if (validation.verified) {
-        toast.success('Presentation validated successfully.');
-      } else {
-        toast.error('Presentation validation failed.');
-      }
-    } catch (error) {
-      console.error('Error validating presentation:', error);
-      toast.error('Error validating presentation. Please try again later.');
-    }
-  };
+  //     if (validation.verified) {
+  //       toast.success('Presentation validated successfully.');
+  //     } else {
+  //       toast.error('Presentation validation failed.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error validating presentation:', error);
+  //     toast.error('Error validating presentation. Please try again later.');
+  //   }
+  // };
 
-  // Función que se ejecuta cuando el usuario rechaza un DID
+  // Reject a DID request
   const handleReject = async (did: string) => {
     try {
       const res = await axios.post('http://localhost:5000/university/rejectDid', { did });
@@ -314,53 +337,67 @@ const AdminPanel: React.FC = () => {
     }
   };
 
-  return (
-    <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
-      <Paper elevation={3} sx={{ padding: '2rem' }}>
-        <Typography variant="h4" align="center" gutterBottom>
-          Admin Panel
-        </Typography>
-        {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
-        <List>
-          {pendingDIDs.map((did) => (
-            <ListItem key={did}>
-              <ListItemText primary={did} />
-              <ListItemSecondaryAction>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleApprove(did)}
-                  sx={{ marginRight: '1rem' }}
-                >
-                  Approve
-                </Button>
-                <Button variant="contained" color="secondary" onClick={() => handleReject(did)}>
-                  Reject
-                </Button>
-              </ListItemSecondaryAction>
-            </ListItem>
-          ))}
-        </List>
-        <Button
-          variant="contained"
-          color="success"
-          onClick={handleCreatePresentation}
-          sx={{ marginTop: '1rem' }}
-        >
-          Create Presentation
-        </Button>
-        <Button
-          variant="contained"
-          color="info"
-          onClick={handleValidatePresentation}
-          sx={{ marginTop: '1rem', marginLeft: '1rem' }}
-        >
-          Validate Presentation
-        </Button>
-      </Paper>
-      <ToastContainer />
-    </Container>
-  );
-};
 
+return (
+  <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
+    <Paper elevation={3} sx={{ padding: '2rem' }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        Admin Panel
+      </Typography>
+      {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
+      <Button variant="contained" color="primary" onClick={connectToMetamask}>
+        Connect to MetaMask
+      </Button>
+      <div style={{ marginBottom: '20px' }}></div>
+      {selectedDidDocument != null && <DidDisplay selectedDidDocument={selectedDidDocument} />}
+      {selectedDidDocument != null && (
+        <CredentialIssuer
+          agent={agent}
+          selectedKey={selectedKey}
+          setSelectedAlgorithm={setSelectedAlgorithm}
+          setVerifiableCredential={setVerifiableCredential} did={''}        />
+      )}
+      {verifiableCredential != null && <CredentialDisplay verifiableCredential={verifiableCredential} />}
+      {verifiableCredential != null && (
+        <CredentialValidator agent={agent} verifiableCredential={verifiableCredential} />
+      )}
+      {verifiableCredential != null && (
+        <PresentationCreator
+          agent={agent}
+          selectedAlgorithm={selectedAlgorithm}
+          selectedKey={selectedKey}
+          verifiableCredential={verifiableCredential}
+          setVerifiablePresentation={setVerifiablePresentation}
+        />
+      )}
+      {verifiablePresentation != null && <PresentationDisplay verifiablePresentation={verifiablePresentation} />}
+      {verifiablePresentation != null && (
+        <PresentationValidator agent={agent} verifiablePresentation={verifiablePresentation} />
+      )}
+      <div style={{ marginBottom: '20px' }}></div>
+      <List>
+        {pendingDIDs.map((did) => (
+          <ListItem key={did}>
+            <ListItemText primary={did} />
+            <ListItemSecondaryAction>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => handleApprove(did)}
+                sx={{ marginRight: '1rem' }}
+              >
+                Approve
+              </Button>
+              <Button variant="contained" color="secondary" onClick={() => handleReject(did)}>
+                Reject
+              </Button>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))}
+      </List>
+    </Paper>
+    <ToastContainer />
+  </Container>
+);
+};
 export default AdminPanel;

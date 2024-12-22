@@ -17,7 +17,7 @@ const CredentialIssuer: React.FC<CredentialIssuerProps> = ({
     did,
   }) => {
     const [inputSubject, setInputSubject] = useState(did); // Usa el DID como inputSubject
-
+    const [signatureType, setSignatureType] = useState('');
     useEffect(() => {
       setInputSubject(did); // Actualiza el inputSubject cuando el DID cambie
     }, [did]);// Este será el sujeto de la credencial
@@ -30,16 +30,18 @@ const CredentialIssuer: React.FC<CredentialIssuerProps> = ({
     };
   
     const handleIssueCredential = async () => {
-      if (!agent || !selectedKey || !inputSubject) {
+      if (!agent || !selectedKey || !inputSubject|| !signatureType) {
+        setSignatureType('EthTypedDataSignature');
         console.error('Missing required fields');
         return;
       }
-      setSelectedAlgorithm('EthTypedDataSignature');
-  
+      setSignatureType('EthTypedDataSignature');
+     
+     
       // Crear el sujeto de la credencial con un claim fijo
       const credentialSubject = { id: inputSubject, ...Object.fromEntries(claims.map(c => [c.key, c.value])) };
   
-      const credential = await issueCredential(agent, selectedKey, credentialSubject, 'EthTypedDataSignature');
+      const credential = await issueCredential(agent, selectedKey, credentialSubject, signatureType);
       setVerifiableCredential(credential);
     };
   

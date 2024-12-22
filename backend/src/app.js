@@ -8,7 +8,7 @@ import corsOptions from './config/corsConfig.js';
 import dbConnection from './config/dbConfig.js';
 import authRoutes from './routes/authRoutes.js';
 import universityRoutes from './routes/universityRoutes.js'; 
-import { importUniversityDID } from './services/veramoAgent.js';
+
 
 
 const app = express();
@@ -24,9 +24,6 @@ dbConnection.initialize().then(() => console.log('Data Source initialized'));
 app.use(passport.initialize());
 app.use('/', authRoutes);
 app.use('/university', universityRoutes);
-(async () => {
-    await importUniversityDID();
 
-})();
 
 export default app;

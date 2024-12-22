@@ -68,7 +68,7 @@ export const agent = createAgent({
         new DIDResolverPlugin({
             resolver: new Resolver(
               getEthrDidResolver({
-                networks: [
+               networks: [
                   {
                     name: 'mainnet',
                     registry: registries['mainnet'],
@@ -90,100 +90,7 @@ export const agent = createAgent({
      
     ]
 });
-
-export async function importUniversityDID() {
-    try {
-       
-//         const did = `did:ethr:sepolia:${address}`;
-
-//  // Importar el DID utilizando el KMS Web3
-//  const importedDid = await agent.didManagerImport({
-//     did,
-//     controllerKeyId: key.kid,
-//     provider: 'did:ethr:sepolia',
-//     keys: [
-//         {
-//             kid: key.kid,
-//             type: 'Secp256k1',
-//             kms: 'web3',
-//             publicKeyHex: key.publicKeyHex,
-//             meta: key.meta,
-//             privateKeyHex: '',
-//         },
-//     ],
-// });
-
-// console.log('DID de la universidad importado exitosamente:', importedDid);
-
-// return importedDid;
-// } catch (error) {
-// console.error('Error al importar el DID de la universidad:', error);
-// throw error;
-// }
-// }
-
-
-
-        const privateKey = process.env.PRIVATE_KEY || ''; 
-
-           // Import the DID of the university
-           const didImportResult = await agent.didManagerImport({
-            did: 'did:ethr:sepolia:0x0EbbDF0f0518EBD772D81B3bdA684e3F67917A03',
-            keys: [
-                {
-                    type: 'Secp256k1',
-                    privateKeyHex: '',
-                    kms: 'web3',
-                    kid: 'did:ethr:sepolia:0x0EbbDF0f0518EBD772D81B3bdA684e3F67917A03#controller',
-                    meta: {
-                        algorithms: ['eth_signTypedData', 'ES256K-R'],
-                    }
-                },
-            ],
-        });
-
-        const identity = await agent.didManagerGet({
-            did: 'did:ethr:sepolia:0x0EbbDF0f0518EBD772D81B3bdA684e3F67917A03',
-          })
-          console.log(`Get identity`)
-          console.log('Claves disponibles:', identity.keys);
-            console.log(identity.did)
-            let did = await agent.resolveDid({ didUrl: identity.did })
-            console.log(did)
-    
-            
-        //     // Verificar si existe una clave con privateKeyHex definido
-        //     const signingKey = identifier.keys.find((key) => key.privateKeyHex);
-            
-        //     if (!signingKey) {
-        //         throw new Error('No se encontró una clave válida con privateKeyHex.');
-        //     }
-        //     console.log('Clave seleccionada para firmar:', signingKey);
-
-        // // console.log('DID de la universidad importado exitosamente.', didImportResult);
-        // console.log('-------------Create Key--------------------') only one time
-        // // Add the key to the DID after import
-        // const key = await agent.keyManagerCreate({
-        //     kms: 'web3',
-        //     type: 'Secp256k1',
-        //   })
-        //   console.log('Key created:', key)
-        //   console.log('-------------Add Key to DID --------------------')
-        //   const result = await agent.didManagerAddKey({
-        //     did: identity.did,
-        //     key,
-        //   })
-        console.log('Clave añadida al DID de la universidad exitosamente.', result);
-    } catch (error) {
-        console.error('Error importando el DID o añadiendo clave:', error);
-    }
-}
-
-  
-
-
-
-  
+ 
 
 
 // Function to verify a verifiable presentation
@@ -204,4 +111,4 @@ export const verifyPresentation = async (verifiablePresentation) => {
     return { credential: decodedCredential, claims, didDocument, hasAccess };
 };
 
-export default { verifyPresentation , agent, importUniversityDID};
+export default { verifyPresentation , agent};
