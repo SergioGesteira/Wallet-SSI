@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Typography, TextField, Button, Paper } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 const UniversityIssue: React.FC = () => {
   const [did, setDid] = useState<string>('');
   const [response, setResponse] = useState<any>(null);
+  const [statusMessage, setStatusMessage] = useState<string>('');
+  const [jwt, setJwt] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const res = await axios.post('http://localhost:5000/university/sendDid', { did });
       setResponse(res.data);
+      setStatusMessage('University is reviewing your application.');
       toast.success('DID submitted successfully.');
     } catch (error) {
       console.error('Error sending DID:', error);
       toast.error('Error sending DID. Please try again later.');
     }
   };
+
+  useEffect(() => {
+    const fetchStoredJwt = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/university/getStoredJwt');
+        if (res.data.success) {
+          setJwt(res.data.jwt);
+          setStatusMessage('Your application has been approved. Here is your JWT:');
+        }
+      } catch (error) {
+        console.error('Error fetching stored JWT:', error);
+      }
+    };
+
+    const interval = setInterval(fetchStoredJwt, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
@@ -47,17 +66,21 @@ const UniversityIssue: React.FC = () => {
             Submit
           </Button>
         </form>
-        {response && (
+        {statusMessage && (
+          <Typography variant="h6" align="center" color="textSecondary" sx={{ marginTop: '1.5rem' }}>
+            {statusMessage}
+          </Typography>
+        )}
+        {jwt && (
           <div>
             <Typography variant="h5" align="center" gutterBottom>
-              Response:
+              JWT:
             </Typography>
-            <pre>{JSON.stringify(response, null, 2)}</pre>
+            <pre>{jwt}</pre>
           </div>
         )}
       </Paper>
       <ToastContainer />
-      
     </Container>
   );
 };

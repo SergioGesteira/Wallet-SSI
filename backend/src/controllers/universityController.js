@@ -2,6 +2,7 @@ import { agent } from '../services/veramoAgent.js'; // Importar el agente Veramo
 
 let pendingDIDs = []; // Lista de DIDs pendientes
 let trustedDIDs = []; // Lista de DIDs confiables
+let storedJwt = ''; // JWT almacenado
 
 // Ruta para enviar un DID al servidor
 export const handleSendDid = (req, res) => {
@@ -50,4 +51,27 @@ export const rejectDid = (req, res) => {
 // Ruta para obtener los DIDs pendientes
 export const getPendingDIDs = (req, res) => {
   return res.status(200).json({ success: true, pendingDIDs });
+};
+
+export const sendPresentationJwt = (req, res) => {
+  const { jwt } = req.body;
+
+
+  if (!jwt) {
+    return res.status(400).json({ success: false, message: 'JWT is required' });
+  }
+
+  storedJwt = jwt; 
+
+  console.log('JWT stored:', storedJwt);
+
+  return res.status(200).json({ success: true, message: 'JWT sent successfully' });
+};
+
+export const getStoredJwt = (req, res) => {
+  if (!storedJwt) {
+    return res.status(404).json({ success: false, message: 'No JWT found' });
+  }
+
+  return res.status(200).json({ success: true, jwt: storedJwt });
 };

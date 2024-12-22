@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ManagedKeyInfo, VerifiableCredential, VerifiablePresentation } from '@veramo/core';
 import { ConfiguredAgent, createVerifiablePresentation } from './Utils';
+import axios from 'axios';
 
 interface PresentationCreatorProps {
   agent: ConfiguredAgent | null;
@@ -52,6 +53,9 @@ const PresentationCreator: React.FC<PresentationCreatorProps> = ({
         selectedAlgorithm
       );
       setVerifiablePresentation(presentation);
+      const jwt = presentation.proof.jwt;
+      console.log('Presentation jwt created:', jwt);
+      await axios.post('http://localhost:5000/university/sendJwt', { jwt });
     } catch (err) {
       setError('Failed to create presentation: ' + (err instanceof Error ? err.message : String(err)));
     } finally {

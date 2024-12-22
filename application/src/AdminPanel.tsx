@@ -69,40 +69,6 @@ const AdminPanel: React.FC = () => {
 
 
 
-  // const connectToMetamask = async () => {
-  //   if (!window.ethereum) {
-  //     toast.error('Metamask no está instalado. Por favor, instala Metamask.');
-  //     return null;
-  //   }
-
-  //   try {
-  //     console.log('Solicitando cuentas...');
-  //     const provider = new BrowserProvider(window.ethereum);
-  //     await provider.send("eth_requestAccounts", []);  // Solicita las cuentas al usuario
-  //     const signer = await provider.getSigner();
-  //     const address = await signer.getAddress();
-
-  //     const kms = new Web3KeyManagementSystem({ provider });
-  //     setKms(kms);
-
-  
-  //     const listedKeys = await kms.listKeys();
-  //     if (listedKeys.length === 0) {
-  //       throw new Error('No keys found');
-  //     }
-  //     setKeys(listedKeys);
-  //     setSelectedKey(listedKeys[0]);
-     
-  //     console.log('Dirección de la cuenta:', address);
-      
-   
-  //   } catch (error) {
-  //     console.error('Error al conectar con Metamask:', error);
-  //     toast.error('Error al conectar con Metamask. Por favor, intenta nuevamente.');
-  //     return null;
-  //   }
-  // };
-
 
   const importDids = useCallback(async () => {
     if (!agent) {
@@ -248,85 +214,12 @@ const AdminPanel: React.FC = () => {
       setApprovedDid(did);
       toast.success(`DID ${did} approved successfully.`);
 
-      // if (!agent) {
-      //   toast.error('Agent is not initialized.');
-      //   return;
-      // }
-      
-      // // Issue credential
-      // const credential = await issueCredential(
-      //   agent,
-      //   selectedKey,
-      //   { id: did }, // Subject of the credential
-      //   fixedAlgorithm
-      // );
-
-      // setVerifiableCredential(credential);
-      // toast.success(`Credential issued for DID ${did}.`);
     } catch (error) {
       console.error('Error approving DID or issuing credential:', error);
       toast.error('Error approving DID or issuing credential. Please try again later.');
     }
   };
 
-  // const handleCreatePresentation = async () => {
-  //   if (!issuedCredential) {
-  //     toast.error('No credential available to create presentation.');
-  //     return;
-  //   }
-
-  //   try {
-
-  //     if (!agent) {
-  //       toast.error('Agent is not initialized.');
-  //       return;
-  //     }
-      
-  //     const presentation = await agent.createVerifiablePresentation({
-  //       presentation: {
-  //         context: "https://www.w3.org/2018/credentials/v1",
-  //         type: ["VerifiablePresentation"],
-  //         holder: issuedCredential.issuer,
-  //         verifiableCredential: [issuedCredential]
-  //       },
-  //       proofFormat: 'EthTypedDataSignature',
-  //     });
-
-  //     setVerifiablePresentation(presentation);
-  //     toast.success('Presentation created successfully.');
-  //   } catch (error) {
-  //     console.error('Error creating presentation:', error);
-  //     toast.error('Error creating presentation. Please try again later.');
-  //   }
-  // };
-
-  // const handleValidatePresentation = async () => {
-  //   if (!verifiablePresentation) {
-  //     toast.error('No presentation available to validate.');
-  //     return;
-  //   }
-
-  //   try {
-  //     if (!agent) {
-  //       toast.error('Agent is not initialized.');
-  //       return;
-  //     }
-      
-  //     const validation = await agent.verifyPresentation({
-  //       presentation: verifiablePresentation,
-  //       proofFormat: 'EthTypedDataSignature',
-  //     });
-
-  //     if (validation.verified) {
-  //       toast.success('Presentation validated successfully.');
-  //     } else {
-  //       toast.error('Presentation validation failed.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error validating presentation:', error);
-  //     toast.error('Error validating presentation. Please try again later.');
-  //   }
-  // };
 
   // Reject a DID request
   const handleReject = async (did: string) => {
