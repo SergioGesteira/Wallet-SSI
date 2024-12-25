@@ -234,6 +234,24 @@ const AdminPanel: React.FC = () => {
     }
   };
 
+    // Send the verifiable presentation to the user
+    const handleSendPresentation = async () => {
+      if (!verifiablePresentation) {
+        toast.error('No verifiable presentation available to send.');
+        return;
+      }
+  
+      try {
+        const jwt = verifiablePresentation.proof.jwt;
+        console.log('Sending presentation jwt:', jwt);
+        await axios.post('http://localhost:5000/university/sendJwt', { jwt });
+        toast.success('Verifiable presentation sent to the user.');
+      } catch (error) {
+        console.error('Error sending presentation:', error);
+        toast.error('Error sending presentation. Please try again later.');
+      }
+    };
+
 
 return (
   <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
@@ -277,6 +295,17 @@ return (
       {verifiablePresentation != null && (
         <PresentationValidator agent={agent} verifiablePresentation={verifiablePresentation} />
       )}
+      <div style={{ marginBottom: '20px' }}></div>
+      {verifiablePresentation && (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSendPresentation}
+            sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+          >
+            Send Verifiable Presentation to User
+          </Button>
+        )}
       <div style={{ marginBottom: '20px' }}></div>
       <List>
         {pendingDIDs.map((did) => (

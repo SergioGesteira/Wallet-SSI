@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ManagedKeyInfo, VerifiableCredential, VerifiablePresentation } from '@veramo/core';
 import { ConfiguredAgent, createVerifiablePresentation } from './Utils';
-import axios from 'axios';
+// import axios from 'axios';
 
 interface PresentationCreatorProps {
   agent: ConfiguredAgent | null;
@@ -53,9 +53,9 @@ const PresentationCreator: React.FC<PresentationCreatorProps> = ({
         selectedAlgorithm
       );
       setVerifiablePresentation(presentation);
-      const jwt = presentation.proof.jwt;
-      console.log('Presentation jwt created:', jwt);
-      await axios.post('http://localhost:5000/university/sendJwt', { jwt });
+      // const jwt = presentation.proof.jwt;
+      // console.log('Presentation jwt created:', jwt);
+      // await axios.post('http://localhost:5000/university/sendJwt', { jwt });
     } catch (err) {
       setError('Failed to create presentation: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
@@ -90,6 +90,22 @@ const PresentationCreator: React.FC<PresentationCreatorProps> = ({
       {!error && verifiableCredential && !selectedAlgorithm && (
         <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded-md">
           <p className="font-semibold">Please select a signature algorithm.</p>
+        </div>
+      )}
+      {verifiableCredential && (
+        <div className="mt-4 p-4 bg-gray-100 text-gray-800 rounded-md">
+          <p className="font-semibold mb-2">Verifiable Presentation:</p>
+          <pre
+            className="text-sm break-words whitespace-pre-wrap"
+            style={{
+              wordBreak: 'break-word',
+              whiteSpace: 'pre-wrap',
+              maxHeight: '400px',
+              overflowY: 'auto',
+            }}
+          >
+            {JSON.stringify(verifiableCredential, null, 2)}
+          </pre>
         </div>
       )}
     </div>

@@ -26,7 +26,15 @@ const PresentationDisplay: React.FC<PresentationDisplayProps> = ({ verifiablePre
       {verifiablePresentation ? (
         <>
           <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
-            <pre className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+            <pre
+              className="text-sm text-gray-700 whitespace-pre-wrap break-words"
+              style={{
+                wordBreak: 'break-word', // Permite dividir palabras largas.
+                whiteSpace: 'pre-wrap', // Conserva saltos de línea.
+                maxHeight: '384px', // Límite de altura para mantener diseño consistente.
+                overflowY: 'auto', // Habilita scroll vertical si es necesario.
+              }}
+            >
               {JSON.stringify(verifiablePresentation, null, 2)}
             </pre>
           </div>

@@ -9,8 +9,16 @@ const CredentialDisplay: React.FC<CredentialDisplayProps> = ({ verifiableCredent
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">Created Verifiable Credential</h2>
       <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">
-        <pre className="text-sm text-gray-700 whitespace-pre-wrap break-words">
-          {JSON.stringify(verifiableCredential, null, 2)}
+        <pre
+          className="text-sm text-gray-700 whitespace-pre-wrap break-words"
+          style={{
+            wordBreak: 'break-word', 
+            whiteSpace: 'pre-wrap', 
+            maxHeight: '384px', 
+            overflowY: 'auto', 
+          }}
+        >
+          {/* {JSON.stringify(verifiableCredential, null, 2)} */}
         </pre>
       </div>
       <div className="mt-4 flex justify-end">

@@ -3,12 +3,14 @@ import axios from 'axios';
 import { Container, Typography, TextField, Button, Paper } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from 'react-router-dom';
 
 const UniversityIssue: React.FC = () => {
   const [did, setDid] = useState<string>('');
   const [response, setResponse] = useState<any>(null);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [jwt, setJwt] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,6 +41,10 @@ const UniversityIssue: React.FC = () => {
     const interval = setInterval(fetchStoredJwt, 5000); // Check every 5 seconds
     return () => clearInterval(interval);
   }, []);
+
+  const handleReturnToLogin = () => {
+    navigate('/');
+  };
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
@@ -76,7 +82,28 @@ const UniversityIssue: React.FC = () => {
             <Typography variant="h5" align="center" gutterBottom>
               JWT:
             </Typography>
-            <pre>{jwt}</pre>
+            <pre
+              style={{
+                wordBreak: 'break-word', // Allows breaking long words
+                whiteSpace: 'pre-wrap', // Preserves whitespace and wraps text
+                maxHeight: '200px', // Limits the height of the pre element
+                overflowY: 'auto', // Adds a vertical scrollbar if content overflows
+                backgroundColor: '#f5f5f5', // Light gray background for better readability
+                padding: '10px', // Padding for better readability
+                borderRadius: '5px', // Rounded corners
+              }}
+            >
+              {jwt}
+            </pre>
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              onClick={handleReturnToLogin}
+              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+            >
+              Return to Login
+            </Button>
           </div>
         )}
       </Paper>

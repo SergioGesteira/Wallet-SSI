@@ -52,13 +52,13 @@ const WalletConnection: React.FC<WalletConnectionProps> = ({ setKms, setKeys, se
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Connect Your Wallet</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Connect to the University Wallet</h2>
       <div className="flex flex-col sm:flex-row justify-between items-center">
         <button
           onClick={connectWallet}
           className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out"
         >
-          Connect MetaMask
+          Connect 
         </button>
       </div>
     </div>
