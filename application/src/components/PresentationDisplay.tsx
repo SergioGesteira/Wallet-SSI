@@ -22,7 +22,7 @@ const PresentationDisplay: React.FC<PresentationDisplayProps> = ({ verifiablePre
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-2xl font-semibold mb-4 text-gray-800">Created Verifiable Presentation</h2>
+      
       {verifiablePresentation ? (
         <>
           <div className="bg-gray-100 p-4 rounded-md overflow-auto max-h-96">

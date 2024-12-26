@@ -62,8 +62,7 @@ export const sendPresentationJwt = (req, res) => {
   }
 
   storedJwt = jwt; 
-
-  console.log('JWT stored:', storedJwt);
+  
 
   return res.status(200).json({ success: true, message: 'JWT sent successfully' });
 };
