@@ -94,7 +94,6 @@ const PresentationCreator: React.FC<PresentationCreatorProps> = ({
       )}
       {verifiableCredential && (
         <div className="mt-4 p-4 bg-gray-100 text-gray-800 rounded-md">
-          <p className="font-semibold mb-2">Verifiable Presentation:</p>
           <pre
             className="text-sm break-words whitespace-pre-wrap"
             style={{
@@ -104,7 +103,7 @@ const PresentationCreator: React.FC<PresentationCreatorProps> = ({
               overflowY: 'auto',
             }}
           >
-            {JSON.stringify(verifiableCredential, null, 2)}
+            {/* {JSON.stringify(verifiableCredential, null, 2)} */}
           </pre>
         </div>
       )}

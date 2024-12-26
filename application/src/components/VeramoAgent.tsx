@@ -14,7 +14,8 @@ import { CredentialProviderEIP712 } from '@veramo/credential-eip712';
 import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
 import { BrowserProvider } from 'ethers';
 
-// Esta función inicializa y devuelve el agente Veramo.
+
+
 export const createVeramoAgent = async (kms: Web3KeyManagementSystem, browserProvider: BrowserProvider) => {
   const registries = {
     mainnet: '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
@@ -77,3 +78,4 @@ export const createVeramoAgent = async (kms: Web3KeyManagementSystem, browserPro
   console.log('Veramo Agent creado');
   return veramoAgent;
 };
+

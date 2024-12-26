@@ -4,41 +4,72 @@ import { Container, Typography, TextField, Button, Paper } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useNavigate } from 'react-router-dom';
+import { createVeramoAgent } from './components/VeramoAgent';
+import WalletConnection from './components/WalletConnection';
+import AccountSelector from './components/AccountSelector';
+import { Web3KeyManagementSystem } from '@veramo/kms-web3';
+import { BrowserProvider } from 'ethers';
 
 const UniversityIssue: React.FC = () => {
   const [did, setDid] = useState<string>('');
   const [response, setResponse] = useState<any>(null);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [jwt, setJwt] = useState<string | null>(null);
+  const [resolvedDidDocument, setResolvedDidDocument] = useState<any>(null);
+  const [kms, setKms] = useState<Web3KeyManagementSystem | null>(null);
+  const [browserProvider, setBrowserProvider] = useState<BrowserProvider | null>(null);
+  const [keys, setKeys] = useState<any[]>([]);
+  const [signer, setSigner] = useState<any>(null);
+  const [selectedKey, setSelectedKey] = useState<any>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!did.startsWith('did:')) {
+      toast.error('Invalid DID format. Please enter a valid DID.');
+      return;
+    }
+    
     try {
       const res = await axios.post('http://localhost:5000/university/sendDid', { did });
       setResponse(res.data);
       setStatusMessage('University is reviewing your application.');
       toast.success('DID submitted successfully.');
+      await resolveDid(did); // Resolve DID after submitting
     } catch (error) {
       console.error('Error sending DID:', error);
       toast.error('Error sending DID. Please try again later.');
     }
   };
 
+  const resolveDid = async (did: string) => {
+    try {
+      if (!kms || !browserProvider) {
+        throw new Error('KMS or BrowserProvider not initialized');
+      }
+      const agent = await createVeramoAgent(kms, browserProvider);
+      const resolvedDid = await agent.resolveDid({ didUrl: did });
+      setResolvedDidDocument(resolvedDid);
+    } catch (error) {
+      console.error('Error resolving DID:', error);
+      toast.error('Error resolving DID. Please try again later.');
+    }
+  };
+
   useEffect(() => {
-    const fetchStoredJwt = async () => {
+    const fetchJwt = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/university/getStoredJwt');
-        if (res.data.success) {
-          setJwt(res.data.jwt);
+        const jwtRes = await axios.get('http://localhost:5000/university/getStoredJwt');
+        if (jwtRes.data.success) {
+          setJwt(jwtRes.data.jwt);
           setStatusMessage('Your application has been approved. Here is your JWT:');
         }
       } catch (error) {
-        console.error('Error fetching stored JWT:', error);
+        console.error('Error fetching JWT:', error);
       }
     };
 
-    const interval = setInterval(fetchStoredJwt, 5000); // Check every 5 seconds
+    const interval = setInterval(fetchJwt, 5000); // Check every 5 seconds
     return () => clearInterval(interval);
   }, []);
 
@@ -52,10 +83,24 @@ const UniversityIssue: React.FC = () => {
         <Typography variant="h4" align="center" gutterBottom>
           University Issue
         </Typography>
+        <WalletConnection
+          setKms={setKms}
+          setBrowserProvider={setBrowserProvider}
+          setKeys={setKeys}
+          setSigner={setSigner}
+          setSelectedKey={setSelectedKey}
+        />
+        {keys.length > 0 && (
+          <AccountSelector
+            keys={keys}
+            selectedKey={selectedKey}
+            setSelectedKey={setSelectedKey}
+          />
+        )}
         <form onSubmit={handleSubmit}>
           <TextField
             label="DID"
-            placeholder="Enter your DID"
+            placeholder="Enter your DID e.g. did:example:123"
             variant="outlined"
             fullWidth
             value={did}
@@ -78,9 +123,40 @@ const UniversityIssue: React.FC = () => {
           </Typography>
         )}
         {jwt && (
+  <div>
+   
+    <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
+      The JWT is displayed below. You can copy it for your use.
+    </Typography>
+    <pre
+      style={{
+        wordBreak: 'break-word', // Allows breaking long words
+        whiteSpace: 'pre-wrap', // Preserves whitespace and wraps text
+        maxHeight: '200px', // Limits the height of the pre element
+        overflowY: 'auto', // Adds a vertical scrollbar if content overflows
+        backgroundColor: '#f5f5f5', // Light gray background for better readability
+        padding: '10px', // Padding for better readability
+        borderRadius: '5px', // Rounded corners
+        fontFamily: 'monospace', // Monospaced font for technical data
+      }}
+    >
+      {jwt}
+    </pre>
+    <Button
+      variant="contained"
+      color="secondary"
+      fullWidth
+      onClick={handleReturnToLogin}
+      sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+    >
+      Return to Login
+    </Button>
+  </div>
+)}
+        {resolvedDidDocument && (
           <div>
             <Typography variant="h5" align="center" gutterBottom>
-              JWT:
+              Resolved DID Document:
             </Typography>
             <pre
               style={{
@@ -93,19 +169,11 @@ const UniversityIssue: React.FC = () => {
                 borderRadius: '5px', // Rounded corners
               }}
             >
-              {jwt}
+              {JSON.stringify(resolvedDidDocument, null, 2)}
             </pre>
-            <Button
-              variant="contained"
-              color="secondary"
-              fullWidth
-              onClick={handleReturnToLogin}
-              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
-            >
-              Return to Login
-            </Button>
           </div>
         )}
+       
       </Paper>
       <ToastContainer />
     </Container>

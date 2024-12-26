@@ -2,6 +2,7 @@ import { agent } from '../services/veramoAgent.js'; // Importar el agente Veramo
 
 let pendingDIDs = []; // Lista de DIDs pendientes
 let trustedDIDs = []; // Lista de DIDs confiables
+let rejectedDIDs = []; // Lista de DIDs rechazados
 let storedJwt = ''; // JWT almacenado
 
 // Ruta para enviar un DID al servidor
@@ -23,6 +24,7 @@ export const approveDid = async (req, res) => {
   if (!did || !pendingDIDs.includes(did)) {
     return res.status(400).json({ success: false, message: 'DID not found in pending list' });
   }
+  
 
   // Mover el DID de pendientes a la lista de confiables
   pendingDIDs = pendingDIDs.filter(d => d !== did);
@@ -44,6 +46,7 @@ export const rejectDid = (req, res) => {
 
   // Eliminar el DID de la lista de pendientes
   pendingDIDs = pendingDIDs.filter(d => d !== did);
+  rejectedDIDs.push(did);
 
   return res.status(200).json({ success: true, message: `DID ${did} rejected` });
 };
@@ -52,6 +55,8 @@ export const rejectDid = (req, res) => {
 export const getPendingDIDs = (req, res) => {
   return res.status(200).json({ success: true, pendingDIDs });
 };
+
+
 
 export const sendPresentationJwt = (req, res) => {
   const { jwt } = req.body;
@@ -62,8 +67,6 @@ export const sendPresentationJwt = (req, res) => {
   }
 
   storedJwt = jwt; 
-  
-
   return res.status(200).json({ success: true, message: 'JWT sent successfully' });
 };
 
@@ -72,5 +75,8 @@ export const getStoredJwt = (req, res) => {
     return res.status(404).json({ success: false, message: 'No JWT found' });
   }
 
-  return res.status(200).json({ success: true, jwt: storedJwt });
+  const jwt = storedJwt;
+  storedJwt = null; // Clear the stored JWT after retrieval
+
+  return res.status(200).json({ success: true, jwt });
 };

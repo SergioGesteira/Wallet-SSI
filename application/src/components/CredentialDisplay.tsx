@@ -17,7 +17,7 @@ const CredentialDisplay: React.FC<CredentialDisplayProps> = ({ verifiableCredent
             overflowY: 'auto', 
           }}
         >
-          {/* {JSON.stringify(verifiableCredential, null, 2)} */}
+          {JSON.stringify(verifiableCredential, null, 2)}
         </pre>
       </div>
       <div className="mt-4 flex justify-end">
