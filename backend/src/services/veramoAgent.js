@@ -91,7 +91,10 @@ export const agent = createAgent({
     ]
 });
  
-
+const allowedIssuers = [
+    'did:ethr:sepolia:0x6E3Eee05f2B947008DdF6f2f7765D10Cb8Ea5F83',
+    'did:ethr:sepolia:0xfA82488EFfc00b09291f6e3A894887C55892Fd69'
+  ];
 
 // Function to verify a verifiable presentation
 export const verifyPresentation = async (verifiablePresentation) => {
@@ -102,13 +105,30 @@ export const verifyPresentation = async (verifiablePresentation) => {
 
     // Decode each verifiable credential from the presentation
     const decodedCredential = verifiableCredential.map(parseJWT);
+   
+
+    const issuer = decodedCredential[0]?.iss;
+  
+
+    if (!issuer) {
+        throw new Error('Issuer is undefined');
+    }
+
+    if (!allowedIssuers.includes(issuer)) {
+        throw new Error('Issuer not allowed');
+    }
     const claims = decodedCredential.map(vc => vc.vc.credentialSubject);
     const didDocument = decodedCredential[0].vc.credentialSubject.id;
+
+
+
+    
 
     // Check if the user has access based on a claim for a specific institution
     const hasAccess = claims.some(claim => claim.college === 'EETAC');
 
     return { credential: decodedCredential, claims, didDocument, hasAccess };
 };
+
 
 export default { verifyPresentation , agent};

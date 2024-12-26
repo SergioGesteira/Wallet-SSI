@@ -9,20 +9,24 @@ import WalletConnection from './components/WalletConnection';
 import AccountSelector from './components/AccountSelector';
 import { Web3KeyManagementSystem } from '@veramo/kms-web3';
 import { BrowserProvider } from 'ethers';
+import { ManagedKeyInfo } from '@veramo/core';
 
 const UniversityIssue: React.FC = () => {
   const [did, setDid] = useState<string>('');
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<unknown>(null);
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [jwt, setJwt] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [resolvedDidDocument, setResolvedDidDocument] = useState<any>(null);
   const [kms, setKms] = useState<Web3KeyManagementSystem | null>(null);
   const [browserProvider, setBrowserProvider] = useState<BrowserProvider | null>(null);
-  const [keys, setKeys] = useState<any[]>([]);
+
+  
+  const [keys, setKeys] = useState<ManagedKeyInfo[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [signer, setSigner] = useState<any>(null);
-  const [selectedKey, setSelectedKey] = useState<any>(null);
+  const [signer, setSigner] = useState<unknown>(null);
+  const [selectedKey, setSelectedKey] = useState<ManagedKeyInfo | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
