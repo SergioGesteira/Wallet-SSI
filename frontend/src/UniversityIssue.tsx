@@ -379,36 +379,41 @@ const UniversityIssue: React.FC = () => {
             </pre>
           </div>
         )}
-        <TextField
-          label="Verifiable Credential "
-          placeholder="Paste your verifiable credential here"
-          multiline
-          rows={6}
-          variant="outlined"
-          fullWidth
-          value={credentialJson}
-          onChange={(e) => setCredentialJson(e.target.value)}
-          sx={{ marginTop: '1.5rem' }}
-        />
-         <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleSetVerifiableCredential}
-          sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
-        >
-          Set Verifiable Credential
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleCreatePresentation}
-          sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
-        >
-          Create Verifiable Presentation
-        </Button>
-    
+         {verifiableCredential && (
+          <>
+            <TextField
+              label="Verifiable Credential"
+              placeholder="Paste your verifiable credential here"
+              multiline
+              rows={6}
+              variant="outlined"
+              fullWidth
+              value={credentialJson}
+              onChange={(e) => setCredentialJson(e.target.value)}
+              sx={{ marginTop: '1.5rem' }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              fullWidth
+              onClick={handleSetVerifiableCredential}
+              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+            >
+              Set Verifiable Credential
+            </Button>
+          </>
+        )}
+        {verifiableCredential && (
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleCreatePresentation}
+            sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+          >
+            Create Verifiable Presentation
+          </Button>
+        )}
         {verifiablePresentation && (
           <div>
             <Typography variant="h5" align="center" gutterBottom>

@@ -6,7 +6,7 @@ const UniversityDashboard: React.FC = () => {
     <Container maxWidth="lg" sx={{ marginTop: '4rem' }}>
       {/* Header Section */}
       <Typography variant="h4" color="primary" align="center" gutterBottom>
-        Welcome to [University Name] Dashboard
+        Welcome to your Dashboard
       </Typography>
       <Typography variant="subtitle1" color="textSecondary" align="center" gutterBottom>
         Explore the latest updates, resources, and information about our university.
@@ -62,17 +62,17 @@ const UniversityDashboard: React.FC = () => {
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <Typography variant="body1">
-                <strong>Computer Science Department:</strong> Dr. John Smith (Head)
+                <strong>Computer Science Department:</strong> Dr. John Hernandez (Head)
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body1">
-                <strong>Mechanical Engineering Department:</strong> Dr. Sarah Johnson (Head)
+                <strong>Mechanical Engineering Department:</strong> Dr. Anthony Alarcon (Head)
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Typography variant="body1">
-                <strong>Business Administration:</strong> Dr. Emily Brown (Head)
+                <strong>Business Administration:</strong> Dr. Susan Alphons (Head)
               </Typography>
             </Grid>
           </Grid>
