@@ -9,6 +9,8 @@ import WalletConnection from './components/WalletConnection';
 import AccountSelector from './components/AccountSelector';
 import { Web3KeyManagementSystem } from '@veramo/kms-web3';
 import { BrowserProvider } from 'ethers';
+import { VerifiableCredential, VerifiablePresentation } from '@veramo/core';
+import { createVerifiablePresentation } from './components/Utils';
 
 const UniversityIssue: React.FC = () => {
   const [did, setDid] = useState<string>('');
@@ -23,6 +25,8 @@ const UniversityIssue: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [signer, setSigner] = useState<any>(null);
   const [selectedKey, setSelectedKey] = useState<any>(null);
+  const [presentationJwt, setPresentationJwt] = useState<VerifiableCredential| null>(null);
+  const [verifiablePresentation, setVerifiablePresentation] = useState<VerifiablePresentation | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,6 +83,22 @@ const UniversityIssue: React.FC = () => {
     navigate('/');
   };
 
+  const handleCreatePresentation = async () => {
+    if (!kms || !browserProvider || !selectedKey || !presentationJwt) {
+      toast.error('Missing required fields to create presentation.');
+      return;
+    }
+    try {
+      const agent = await createVeramoAgent(kms, browserProvider);
+      const presentation = await createVerifiablePresentation(agent, selectedKey, presentationJwt, 'EthTypedDataSignature');
+      setVerifiablePresentation(presentation);
+      toast.success('Verifiable Presentation created successfully.');
+    } catch (error) {
+      console.error('Error creating presentation:', error);
+      toast.error('Error creating presentation. Please try again later.');
+    }
+  };
+
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
       <Paper elevation={3} sx={{ padding: '2rem' }}>
@@ -124,9 +144,8 @@ const UniversityIssue: React.FC = () => {
             {statusMessage}
           </Typography>
         )}
-        {jwt && (
-  <div>
-   
+    {jwt && (
+    <div>
     <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
       The JWT is displayed below. You can copy it for your use.
     </Typography>
@@ -154,7 +173,7 @@ const UniversityIssue: React.FC = () => {
       Return to Login
     </Button>
   </div>
-)}
+  )}
         {resolvedDidDocument && (
           <div>
             <Typography variant="h5" align="center" gutterBottom>
@@ -172,6 +191,53 @@ const UniversityIssue: React.FC = () => {
               }}
             >
               {JSON.stringify(resolvedDidDocument, null, 2)}
+            </pre>
+          </div>
+        )}
+         <TextField
+          label="JWT Verifiable Credential"
+          placeholder="Paste the JWT of your verifiable credential here"
+          multiline
+          rows={6}
+          variant="outlined"
+          fullWidth
+          value={presentationJwt}
+          onChange={(e) => {
+            try {
+              const parsedJwt = JSON.parse(e.target.value) as VerifiableCredential;
+              setPresentationJwt(parsedJwt);
+            } catch (error) {
+              toast.error('Invalid JWT format. Please enter a valid JWT.');
+            }
+          }}
+          sx={{ marginTop: '1.5rem' }}
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleCreatePresentation}
+          sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+        >
+          Create Verifiable Presentation
+        </Button>
+        {verifiablePresentation && (
+          <div>
+            <Typography variant="h5" align="center" gutterBottom>
+              Verifiable Presentation:
+            </Typography>
+            <pre
+              style={{
+                wordBreak: 'break-word',
+                whiteSpace: 'pre-wrap',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                backgroundColor: '#f5f5f5',
+                padding: '10px',
+                borderRadius: '5px',
+              }}
+            >
+              {JSON.stringify(verifiablePresentation, null, 2)}
             </pre>
           </div>
         )}

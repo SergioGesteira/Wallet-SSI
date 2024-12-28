@@ -105,27 +105,20 @@ export const verifyPresentation = async (verifiablePresentation) => {
 
     // Decode each verifiable credential from the presentation
     const decodedCredential = verifiableCredential.map(parseJWT);
-   
-
-    const issuer = decodedCredential[0]?.iss;
-  
-
-    if (!issuer) {
+       const issuer = decodedCredential[0]?.iss;
+      if (!issuer) {
         throw new Error('Issuer is undefined');
     }
-
     if (!allowedIssuers.includes(issuer)) {
         throw new Error('Issuer not allowed');
     }
     const claims = decodedCredential.map(vc => vc.vc.credentialSubject);
     const didDocument = decodedCredential[0].vc.credentialSubject.id;
 
-
-
     
 
     // Check if the user has access based on a claim for a specific institution
-    const hasAccess = claims.some(claim => claim.college === 'EETAC');
+    const hasAccess = claims.some(claim => claim.college === 'EETAC'|| claim.college === 'ETSETB');
 
     return { credential: decodedCredential, claims, didDocument, hasAccess };
 };

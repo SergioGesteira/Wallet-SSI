@@ -90,7 +90,7 @@ async function createVerifiablePresentation(
   selectedKey: ManagedKeyInfo,
   verifiableCredential: VerifiableCredential,
   selectedAlgorithm: string
-) {
+): Promise<VerifiablePresentation> {
   if (!agent) {
     throw new Error('Agent not initialized');
   }
@@ -115,7 +115,7 @@ async function createVerifiablePresentation(
     },
     proofFormat: selectedAlgorithm,
   });
-
+  console.log('Created Presentation:', presentation);
   return presentation;
 }
 

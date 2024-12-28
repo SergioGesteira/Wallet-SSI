@@ -252,84 +252,112 @@ const AdminPanel: React.FC = () => {
       }
     };
 
+    const handleSendCredential = async () => {
+      if (!verifiableCredential) {
+        toast.error('No verifiable credential available to send.');
+        return;
+      }
+    
+      try {
+        // const jwt = verifiableCredential.proof.jwt;
+        // console.log('Sending credential jwt:', jwt);
+        await axios.post('http://localhost:5000/university/sendJwt', { verifiableCredential });
+        toast.success('Verifiable credential sent to the user.');
+      } catch (error) {
+        console.error('Error sending credential:', error);
+        toast.error('Error sending credential. Please try again later.');
+      }
+    };
 
-return (
-  <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
-    <Paper elevation={3} sx={{ padding: '2rem' }}>
-      <Typography variant="h4" align="center" gutterBottom>
-        Admin Panel
-      </Typography>
-      {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
-      <WalletConnection
-          setKms={setKms}
-          setKeys={setKeys}
-          setBrowserProvider={setBrowserProvider}
-          setSigner={setSigner}
-          setSelectedKey={setSelectedKey}
-        />
-        <div style={{ marginBottom: '20px' }}></div>
-        {selectedDidDocument != null && <DidDisplay selectedDidDocument={selectedDidDocument} />}
-        {approvedDid && (
-          <CredentialIssuer
-            agent={agent}
-            selectedKey={selectedKey}
-            setSelectedAlgorithm={setSelectedAlgorithm}
-            setVerifiableCredential={setVerifiableCredential}
-            did={approvedDid}
+
+    return (
+      <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
+        <Paper elevation={3} sx={{ padding: '2rem' }}>
+          <Typography variant="h4" align="center" gutterBottom>
+            Admin Panel
+          </Typography>
+          {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
+          <WalletConnection
+            setKms={setKms}
+            setKeys={setKeys}
+            setBrowserProvider={setBrowserProvider}
+            setSigner={setSigner}
+            setSelectedKey={setSelectedKey}
           />
-        )}
-      {verifiableCredential != null && <CredentialDisplay verifiableCredential={verifiableCredential} />}
-      {verifiableCredential != null && (
-        <CredentialValidator agent={agent} verifiableCredential={verifiableCredential} />
-      )}
-      {verifiableCredential != null && (
-        <PresentationCreator
-          agent={agent}
-          selectedAlgorithm={selectedAlgorithm}
-          selectedKey={selectedKey}
-          verifiableCredential={verifiableCredential}
-          setVerifiablePresentation={setVerifiablePresentation}
-        />
-      )}
-      {verifiablePresentation != null && <PresentationDisplay verifiablePresentation={verifiablePresentation} />}
-      {verifiablePresentation != null && (
-        <PresentationValidator agent={agent} verifiablePresentation={verifiablePresentation} />
-      )}
-      <div style={{ marginBottom: '20px' }}></div>
-      {verifiablePresentation && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSendPresentation}
-            sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
-          >
-            Send Verifiable Presentation to User
-          </Button>
-        )}
-      <div style={{ marginBottom: '20px' }}></div>
-      <List>
-        {pendingDIDs.map((did) => (
-          <ListItem key={did}>
-            <ListItemText primary={did} />
-            <ListItemSecondaryAction>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => handleApprove(did)}
-                sx={{ marginRight: '1rem' }}
-              >
-                Approve
-              </Button>
-              <Button variant="contained" color="secondary" onClick={() => handleReject(did)}>
-                Reject
-              </Button>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))}
-      </List>
-    </Paper>
-    <ToastContainer />
-  </Container>
-);
-};
+          <div style={{ marginBottom: '20px' }}></div>
+          {selectedDidDocument != null && <DidDisplay selectedDidDocument={selectedDidDocument} />}
+          {approvedDid && (
+            <CredentialIssuer
+              agent={agent}
+              selectedKey={selectedKey}
+              setSelectedAlgorithm={setSelectedAlgorithm}
+              setVerifiableCredential={setVerifiableCredential}
+              did={approvedDid}
+            />
+          )}
+          {verifiableCredential != null && <CredentialDisplay verifiableCredential={verifiableCredential} />}
+          {verifiableCredential != null && (
+            <CredentialValidator agent={agent} verifiableCredential={verifiableCredential} />
+          )}
+          {verifiableCredential != null && (
+            <PresentationCreator
+              agent={agent}
+              selectedAlgorithm={selectedAlgorithm}
+              selectedKey={selectedKey}
+              verifiableCredential={verifiableCredential}
+              setVerifiablePresentation={setVerifiablePresentation}
+            />
+          )}
+          {verifiablePresentation != null && <PresentationDisplay verifiablePresentation={verifiablePresentation} />}
+          {verifiablePresentation != null && (
+            <PresentationValidator agent={agent} verifiablePresentation={verifiablePresentation} />
+          )}
+          <div style={{ marginBottom: '20px' }}></div>
+          {verifiablePresentation && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSendPresentation}
+              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+            >
+              Send Verifiable Presentation to User
+            </Button>
+          )}
+          <div style={{ marginBottom: '20px' }}></div>
+          {verifiableCredential && (
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSendCredential}
+              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+            >
+              Send Verifiable Credential to User
+            </Button>
+          )}
+          <div style={{ marginBottom: '20px' }}></div>
+          <List>
+            {pendingDIDs.map((did) => (
+              <ListItem key={did}>
+                <ListItemText primary={did} />
+                <ListItemSecondaryAction>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleApprove(did)}
+                    sx={{ marginRight: '1rem' }}
+                  >
+                    Approve
+                  </Button>
+                  <Button variant="contained" color="secondary" onClick={() => handleReject(did)}>
+                    Reject
+                  </Button>
+                </ListItemSecondaryAction>
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+        <ToastContainer />
+      </Container>
+    );
+  };
 export default AdminPanel;

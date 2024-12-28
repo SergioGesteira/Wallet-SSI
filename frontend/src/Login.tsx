@@ -137,22 +137,22 @@ const Login: React.FC = () => {
         </Button>
 
         <Typography variant="h6" align="center" sx={{ marginTop: '2rem' }}>
-          We only accept credentials from these issuers:
-        </Typography>
-        <ul>
-          {acceptedIssuers.map((issuer, index) => (
-            <li key={index}>
-              <Typography variant="body1" align="center">
-                {issuer}
-              </Typography>
-            </li>
-          ))}
-        </ul>
-      </Paper>
+  We only accept credentials from these issuers:
+</Typography>
+<ul style={{ listStyleType: 'none', padding: 0, margin: '1rem 0', textAlign: 'center' }}>
+  {acceptedIssuers.map((issuer, index) => (
+    <li key={index} style={{ margin: '0.5rem 0', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '4px', backgroundColor: '#f9f9f9', wordBreak: 'break-all'  }}>
+      <Typography variant="body1" align="center"sx={{ wordBreak: 'break-all' }}>
+        {issuer}
+      </Typography>
+    </li>
+  ))}
+</ul>
+</Paper>
 
-      <ToastContainer />
-    </Container>
-  );
+<ToastContainer />
+</Container>
+);
 };
 
 export default Login;

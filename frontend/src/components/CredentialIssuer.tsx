@@ -23,7 +23,7 @@ const CredentialIssuer: React.FC<CredentialIssuerProps> = ({
     }, [did]);
   
     // Simplificación, solo agregamos un claim fijo
-    const claims = [{ key: 'college', value: 'EETAC' }];
+   
   
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       setInputSubject(event.target.value);
@@ -37,6 +37,21 @@ const CredentialIssuer: React.FC<CredentialIssuerProps> = ({
         console.error('Missing required fields');
         return;
       }
+
+      let claimValue = '';
+      const universityDid = selectedKey.kid;
+      console.log('universityDid:', universityDid);
+
+      if (universityDid === 'provider-0x6E3Eee05f2B947008DdF6f2f7765D10Cb8Ea5F83') {
+        claimValue = 'EETAC';
+      } else if (universityDid=== 'provider-0xfA82488EFfc00b09291f6e3A894887C55892Fd69') {
+        claimValue = 'ETSETB';
+      } else {
+        console.error('DID not recognized');
+        return;
+      }
+
+    const claims = [{ key: 'college', value: claimValue }];
     
       // Crear el sujeto de la credencial con un claim fijo
       const credentialSubject = { id: inputSubject, ...Object.fromEntries(claims.map(c => [c.key, c.value])) };

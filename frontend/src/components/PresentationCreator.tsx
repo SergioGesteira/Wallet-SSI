@@ -8,7 +8,7 @@ interface PresentationCreatorProps {
   selectedKey: ManagedKeyInfo | null;
   verifiableCredential: VerifiableCredential | null;
   selectedAlgorithm: string | null;
-  setVerifiablePresentation: React.Dispatch<React.SetStateAction<VerifiablePresentation | null>>;
+  setVerifiablePresentation: (presentation: VerifiablePresentation) => void;
 }
 
 const PresentationCreator: React.FC<PresentationCreatorProps> = ({
@@ -45,13 +45,14 @@ const PresentationCreator: React.FC<PresentationCreatorProps> = ({
     setIsCreating(true);
     setError(null);
 
+
+    console.log('agent:', agent);
+    console.log('selectedKey:', selectedKey);
+    console.log('verifiableCredential:', verifiableCredential);
+    console.log('selectedAlgorithm:', selectedAlgorithm);
+    
     try {
-      const presentation = await createVerifiablePresentation(
-        agent,
-        selectedKey,
-        verifiableCredential,
-        selectedAlgorithm
-      );
+      const presentation = await createVerifiablePresentation(agent, selectedKey, verifiableCredential, selectedAlgorithm);
       setVerifiablePresentation(presentation);
       // const jwt = presentation.proof.jwt;
       // console.log('Presentation jwt created:', jwt);

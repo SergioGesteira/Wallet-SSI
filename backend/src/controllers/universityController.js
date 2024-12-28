@@ -4,6 +4,7 @@ let pendingDIDs = []; // Lista de DIDs pendientes
 let trustedDIDs = []; // Lista de DIDs confiables
 let rejectedDIDs = []; // Lista de DIDs rechazados
 let storedJwt = ''; // JWT almacenado
+let storedVerifiableCredential = ''; // Verifiable Credential almacenado
 
 // Ruta para enviar un DID al servidor
 export const handleSendDid = (req, res) => {
@@ -79,4 +80,28 @@ export const getStoredJwt = (req, res) => {
   storedJwt = null; // Clear the stored JWT after retrieval
 
   return res.status(200).json({ success: true, jwt });
+};
+// Ruta para enviar el Verifiable Credential
+export const sendVerifiableCredential = (req, res) => {
+  const { verifiableCredential } = req.body;
+  console.log(verifiableCredential);
+
+  if (!verifiableCredential) {
+    return res.status(400).json({ success: false, message: 'Verifiable Credential is required' });
+  }
+
+  storedVerifiableCredential = verifiableCredential;
+  return res.status(200).json({ success: true, message: 'Verifiable Credential sent successfully' });
+};
+
+// Ruta para obtener el Verifiable Credential almacenado
+export const getStoredVerifiableCredential = (req, res) => {
+  if (!storedVerifiableCredential) {
+    return res.status(404).json({ success: false, message: 'No Verifiable Credential found' });
+  }
+
+  const verifiableCredential = storedVerifiableCredential;
+  storedVerifiableCredential = null; // Clear the stored Verifiable Credential after retrieval
+
+  return res.status(200).json({ success: true, verifiableCredential });
 };
