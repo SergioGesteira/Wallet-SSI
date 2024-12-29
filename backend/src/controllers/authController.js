@@ -1,41 +1,69 @@
-// import { generateNonce } from '../utils/utils.js';
+import { generateNonce } from '../utils/utils.js';
 import veramoAgent from '../services/veramoAgent.js';
 import jwtoken from 'jsonwebtoken';
+// import { setInRedis } from '../config/redisConfig.js'; 
+// import { getFromRedis } from '../config/redisConfig.js';
 
+
+
+export const parseJWT = (token) => {
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    throw new Error("The token is not a valid JWT.");
+  }
+  return JSON.parse(Buffer.from(parts[1], 'base64').toString('utf-8'));
+};
 
 
 // Controller to generate a nonce for the client
-// export const getNonce = (req, res) => {
-//     try {
-//         const nonce = generateNonce(); // Generate a unique nonce
-//         req.session.nonce = nonce; // Store nonce in session for validation later
-//         res.json({ nonce }); // Send nonce to client
-//     } catch (err) {
-//         console.error('Error generating nonce:', err);
-//         return res.status(500).json({ message: 'Error generating nonce' });
-//     }
-// };
+export const getNonce = async (req, res) => {
+    try {
+        const nonce = generateNonce(); // Generate a unique nonce
+        req.session.nonce = nonce; 
+        console.log('nonce generado y almacenado en session:', req.session.nonce);
+        // await setInRedis(`nonce:${nonce}`, nonce); // Store nonce in session for validation later
+        // console.log('nonce generado y almacenado en Redis:', nonce);
+        res.json({ nonce }); // Send nonce to client
+     
+    } catch (err) {
+        console.error('Error generating nonce:', err);
+        return res.status(500).json({ message: 'Error generating nonce' });
+    }
+};
 
 // Controller to verify the user's verifiable presentation
 export const verifyPresentation = async (req, res) => {
-    const { jwt: verifiablePresentation } = req.body;
+    // const { jwt: verifiablePresentation } = req.body;
 
-    // const { jwt: verifiablePresentation, nonce } = req.body;
+    const { jwt: verifiablePresentation , nonce} = req.body;
 
-    // Validate incoming data
-    if (!verifiablePresentation) {
-        return res.status(400).json({ message: 'Verifiable presentation is missing.' });
+    if (!verifiablePresentation || !nonce) {
+        return res.status(400).json({ message: 'Missing verifiable presentation or nonce.' });
     }
-    // if (nonce !== req.session.nonce) {
-    //     return res.status(403).json({ message: 'Invalid nonce' });
-    // }
-    // Invalidate nonce after use to prevent reuse attacks
-    // req.session.nonce = null;
+
+    const noncefrontend = nonce;
+    console.log('noncefrontend:', noncefrontend);
+
+    
+    console.log('Nonce almacenado en sesión:', req.session ? req.session.nonce : 'No session data');  
+    console.log ('req.session.nonce', req.session.nonce);
+  
 
     try {
         // Verify the verifiable presentation using Veramo
         const { credential, claims, didDocument, hasAccess } = await veramoAgent.verifyPresentation(verifiablePresentation);
 
+        const parsedPayload = parseJWT(verifiablePresentation);
+ 
+
+        const currentTime = Math.floor(Date.now() / 1000);
+        console.log('currentTime:', currentTime);
+        const nbf = parsedPayload.nbf;
+        console.log('nbf:', nbf);
+        // Verify timestamp (5 minutes = 300 seconds)
+        if (currentTime - nbf > 300) {
+            return res.status(403).json({ message: 'Presentation has expired.' });
+        }
        
         // Check if the user has the necessary access
         if (hasAccess) {

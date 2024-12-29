@@ -84,7 +84,7 @@ export const getStoredJwt = (req, res) => {
 // Ruta para enviar el Verifiable Credential
 export const sendVerifiableCredential = (req, res) => {
   const { verifiableCredential } = req.body;
-  console.log(verifiableCredential);
+
 
   if (!verifiableCredential) {
     return res.status(400).json({ success: false, message: 'Verifiable Credential is required' });

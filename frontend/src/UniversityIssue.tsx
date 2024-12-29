@@ -237,24 +237,36 @@ const UniversityIssue: React.FC = () => {
       return;
     }
     try {
+      // Fetch nonce from the server
+      //console.log('Fetching nonce from the server...');
+      //const nonceResponse = await axios.get('http://localhost:5000/getNonce');
+      //const nonce = nonceResponse.data.nonce;
+      //console.log('Nonce received from server:', nonce);
+
       const did = `did:ethr:sepolia:${selectedKey.meta?.account.address}`;
       console.log('Holder DID:', did);
+
+      const timestamp = Math.floor(Date.now() / 1000); // Current timestamp in seconds
+      console.log('Current timestamp:', timestamp);
 
       const presentation = await agent.createVerifiablePresentation({
         presentation: {
           holder: did,
           verifiableCredential: [verifiableCredential],
+          nbf: timestamp,
         },
         proofFormat: selectedAlgorithm,
       });
 
       setVerifiablePresentation(presentation);
       toast.success('Verifiable Presentation created successfully.');
+      
     } catch (error) {
       console.error('Error creating presentation:', error);
       toast.error('Error creating presentation. Please try again later.');
     }
   };
+
   const handleSetVerifiableCredential = () => {
     try {
       const parsedCredential = JSON.parse(credentialJson) as VerifiableCredential;

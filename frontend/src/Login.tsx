@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios, { AxiosError } from 'axios';
-import { useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 import { Container, Typography, TextField, Button, Paper, CircularProgress } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify'; // Import React Toastify
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify styles
@@ -15,35 +15,25 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state for UI feedback
   const [isFormVisible, setIsFormVisible] = useState(false); // Controls visibility of the login form
   const navigate = useNavigate();
-
+  // const location = useLocation();
+  // const nonce = location.state?.nonce;
   
 
-  // Function to fetch a unique nonce from the server
-  // const fetchNonce = async (): Promise<string | null> => {
-  //   try {
-  //     const response = await axios.get<{ nonce: string }>('http://localhost:5000/getNonce', {
-  //       withCredentials: true,
-  //     });
-  //     return response.data.nonce;
-  //   } catch (error) {
-  //     console.error('Error fetching nonce:', error);
-  //     toast.error('Error fetching nonce. Please try again later.'); // Error notification
-  //     return null;
-  //   }
-  // };
-
-  // Handles the login process
+    // Handles the login process
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      // const nonce = await fetchNonce(); // Fetch nonce from server
-      // if (!nonce) return;
 
+      //console.log('Fetching nonce from the server...');
+      const nonceResponse = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
+      const nonce = nonceResponse.data.nonce;
+      console.log('Nonce received from server:', nonce);
       // Send the JWT verifiable presentation and nonce to server for verification
+  
+        if (!nonce) return;
       const response = await axios.post(
         'http://localhost:5000/verifyPresentation',
-        { jwt: verifiablePresentation },
-        // { jwt: verifiablePresentation, nonce },
+        { jwt: verifiablePresentation, nonce: nonce },
         { withCredentials: true }
       );
 
