@@ -15,8 +15,7 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false); // Loading state for UI feedback
   const [isFormVisible, setIsFormVisible] = useState(false); // Controls visibility of the login form
   const navigate = useNavigate();
-  // const location = useLocation();
-  // const nonce = location.state?.nonce;
+
   
 
     // Handles the login process
@@ -24,7 +23,7 @@ const Login: React.FC = () => {
     setIsLoading(true);
     try {
 
-      //console.log('Fetching nonce from the server...');
+      console.log('Fetching nonce from the server...');
       const nonceResponse = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
       const nonce = nonceResponse.data.nonce;
       console.log('Nonce received from server:', nonce);

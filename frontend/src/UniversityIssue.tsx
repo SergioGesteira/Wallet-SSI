@@ -165,11 +165,16 @@ const UniversityIssue: React.FC = () => {
     }
     
     try {
+      await resolveDid(did);
+      if (!resolvedDidDocument) {
+        toast.error('DID could not be resolved. Please enter a valid DID.');
+        return;
+      }
+
       const res = await axios.post('http://localhost:5000/university/sendDid', { did });
       setResponse(res.data);
       setStatusMessage('University is reviewing your application.');
       toast.success('DID submitted successfully.');
-      await resolveDid(did); // Resolve DID after submitting
     } catch (error) {
       console.error('Error sending DID:', error);
       toast.error('Error sending DID. Please try again later.');

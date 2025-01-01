@@ -6,26 +6,34 @@ let rejectedDIDs = []; // Lista de DIDs rechazados
 let storedJwt = ''; // JWT almacenado
 let storedVerifiableCredential = ''; // Verifiable Credential almacenado
 
-// Ruta para enviar un DID al servidor
-export const handleSendDid = (req, res) => {
+// Send DID to the server 
+export const handleSendDid = async (req, res) => {
   const { did } = req.body;
 
   if (!did) {
     return res.status(400).json({ success: false, message: 'DID is required' });
   }
 
-  pendingDIDs.push(did);
-  return res.status(200).json({ success: true, message: 'DID submitted successfully' });
-};
+  try {
+    const resolvedDid = await agent.resolveDid({ didUrl: did });
+    if (!resolvedDid || !resolvedDid.didDocument) {
+      return res.status(400).json({ success: false, message: 'DID could not be resolved' });
+    }
 
-// Ruta para aprobar un DID
+    pendingDIDs.push(did);
+    return res.status(200).json({ success: true, message: 'DID submitted successfully' });
+  } catch (error) {
+    console.error('Error resolving DID:', error);
+    return res.status(500).json({ success: false, message: 'Error resolving DID' });
+  }
+};
+// Approve DID
 export const approveDid = async (req, res) => {
   const { did, address } = req.body;
 
   if (!did || !pendingDIDs.includes(did)) {
     return res.status(400).json({ success: false, message: 'DID not found in pending list' });
   }
-  
 
   // Mover el DID de pendientes a la lista de confiables
   pendingDIDs = pendingDIDs.filter(d => d !== did);
@@ -37,7 +45,7 @@ export const approveDid = async (req, res) => {
 };
 
 
-// Ruta para rechazar un DID
+// Reject DID
 export const rejectDid = (req, res) => {
   const { did } = req.body;
 
@@ -45,20 +53,13 @@ export const rejectDid = (req, res) => {
     return res.status(400).json({ success: false, message: 'DID not found in pending list' });
   }
 
-  // Eliminar el DID de la lista de pendientes
   pendingDIDs = pendingDIDs.filter(d => d !== did);
   rejectedDIDs.push(did);
 
   return res.status(200).json({ success: true, message: `DID ${did} rejected` });
 };
 
-// Ruta para obtener los DIDs pendientes
-export const getPendingDIDs = (req, res) => {
-  return res.status(200).json({ success: true, pendingDIDs });
-};
-
-
-
+// send presentation JWT
 export const sendPresentationJwt = (req, res) => {
   const { jwt } = req.body;
 
@@ -81,7 +82,7 @@ export const getStoredJwt = (req, res) => {
 
   return res.status(200).json({ success: true, jwt });
 };
-// Ruta para enviar el Verifiable Credential
+// send verifiable credential
 export const sendVerifiableCredential = (req, res) => {
   const { verifiableCredential } = req.body;
 
@@ -94,7 +95,14 @@ export const sendVerifiableCredential = (req, res) => {
   return res.status(200).json({ success: true, message: 'Verifiable Credential sent successfully' });
 };
 
-// Ruta para obtener el Verifiable Credential almacenado
+// Ruta para obtener los DIDs pendientes
+export const getPendingDIDs = (req, res) => {
+  return res.status(200).json({ success: true, pendingDIDs });
+};
+
+
+
+//get the verifiable credential
 export const getStoredVerifiableCredential = (req, res) => {
   if (!storedVerifiableCredential) {
     return res.status(404).json({ success: false, message: 'No Verifiable Credential found' });

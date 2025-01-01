@@ -1,8 +1,7 @@
 import { generateNonce } from '../utils/utils.js';
 import veramoAgent from '../services/veramoAgent.js';
 import jwtoken from 'jsonwebtoken';
-// import { setInRedis } from '../config/redisConfig.js'; 
-// import { getFromRedis } from '../config/redisConfig.js';
+
 
 
 
@@ -21,8 +20,7 @@ export const getNonce = async (req, res) => {
         const nonce = generateNonce(); // Generate a unique nonce
         req.session.nonce = nonce; 
         console.log('nonce generado y almacenado en session:', req.session.nonce);
-        // await setInRedis(`nonce:${nonce}`, nonce); // Store nonce in session for validation later
-        // console.log('nonce generado y almacenado en Redis:', nonce);
+       
         res.json({ nonce }); // Send nonce to client
      
     } catch (err) {
@@ -33,8 +31,7 @@ export const getNonce = async (req, res) => {
 
 // Controller to verify the user's verifiable presentation
 export const verifyPresentation = async (req, res) => {
-    // const { jwt: verifiablePresentation } = req.body;
-
+    
     const { jwt: verifiablePresentation , nonce} = req.body;
 
     if (!verifiablePresentation || !nonce) {
@@ -62,7 +59,8 @@ export const verifyPresentation = async (req, res) => {
         console.log('nbf:', nbf);
         // Verify timestamp (5 minutes = 300 seconds)
         if (currentTime - nbf > 300) {
-            return res.status(403).json({ message: 'Presentation has expired.' });
+            const expiredTime = currentTime - nbf - 300;
+            return res.status(403).json({ message: `Presentation has expired. It expired ${expiredTime} seconds ago.` });
         }
        
         // Check if the user has the necessary access
