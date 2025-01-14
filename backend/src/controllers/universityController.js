@@ -3,6 +3,7 @@ import { agent } from '../services/veramoAgent.js'; // Importar el agente Veramo
 let pendingDIDs = []; // Lista de DIDs pendientes
 let trustedDIDs = []; // Lista de DIDs confiables
 let rejectedDIDs = []; // Lista de DIDs rechazados
+let didStatus = {};
 let storedJwt = ''; // JWT almacenado
 let storedVerifiableCredential = ''; // Verifiable Credential almacenado
 
@@ -55,7 +56,7 @@ export const rejectDid = (req, res) => {
 
   pendingDIDs = pendingDIDs.filter(d => d !== did);
   rejectedDIDs.push(did);
-
+  didStatus[did] = 'rejected'; // Update the status of the DID
   return res.status(200).json({ success: true, message: `DID ${did} rejected` });
 };
 
@@ -112,4 +113,16 @@ export const getStoredVerifiableCredential = (req, res) => {
   storedVerifiableCredential = null; // Clear the stored Verifiable Credential after retrieval
 
   return res.status(200).json({ success: true, verifiableCredential });
+};
+
+// Get the status of a DID
+export const getDidStatus = (req, res) => {
+  const { did } = req.query;
+
+  if (!did) {
+    return res.status(400).json({ success: false, message: 'DID is required' });
+  }
+
+  const status = didStatus[did] || 'pending';
+  return res.status(200).json({ success: true, status });
 };

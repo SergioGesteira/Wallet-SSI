@@ -20,7 +20,7 @@ import { CredentialProviderEip712JWT } from 'credential-eip712jwt';
 import { parseJWT } from '../utils/utils.js';
 
 // Set up Ethereum provider for Sepolia testnet
-const provider = new ethers.JsonRpcProvider("https://rpc.sepolia.org");
+const provider = new ethers.JsonRpcProvider("https://1rpc.io/sepolia");
 
 // Initialize the Key Management System (KMS) using Web3
 const kms = new Web3KeyManagementSystem({ eip1193: provider });

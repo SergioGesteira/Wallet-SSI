@@ -18,21 +18,22 @@ const Login: React.FC = () => {
 
   
 
-    // Handles the login process
+  // Handles the login process
   const handleLogin = async () => {
     setIsLoading(true);
     try {
 
-      console.log('Fetching nonce from the server...');
-      const nonceResponse = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
-      const nonce = nonceResponse.data.nonce;
-      console.log('Nonce received from server:', nonce);
+      // console.log('Fetching nonce from the server...');
+      // const nonceResponse = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
+      // const nonce = nonceResponse.data.nonce;
+      // console.log('Nonce received from server:', nonce);
       // Send the JWT verifiable presentation and nonce to server for verification
   
-        if (!nonce) return;
+        // if (!nonce) return;
       const response = await axios.post(
         'http://localhost:5000/verifyPresentation',
-        { jwt: verifiablePresentation, nonce: nonce },
+        // { jwt: verifiablePresentation, nonce: nonce },
+        { jwt: verifiablePresentation },
         { withCredentials: true }
       );
 
@@ -55,7 +56,7 @@ const Login: React.FC = () => {
   };
 
     // Redirects the user to the credential app to obtain a verifiable credential
-    const handleRedirectToCredentialApp = () => {
+    const handleRedirectToIssue = () => {
       navigate('/university-issue'); 
     };
 
@@ -119,7 +120,7 @@ const Login: React.FC = () => {
           variant="contained"
           color="primary"
           fullWidth
-          onClick={handleRedirectToCredentialApp}
+          onClick={handleRedirectToIssue}
           sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
         >
           Don't have a credential yet?

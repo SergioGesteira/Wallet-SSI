@@ -75,7 +75,7 @@ export const createVeramoAgent = async (kms: Web3KeyManagementSystem, browserPro
     ],
   });
 
-  console.log('Veramo Agent creado');
+  console.log('Veramo Agent created');
   return veramoAgent;
 };
 

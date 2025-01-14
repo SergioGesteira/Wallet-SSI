@@ -199,7 +199,7 @@ const AdminPanel: React.FC = () => {
   
 
 
-  // User approves DID
+  // Admin approves user's DID
   const handleApprove = async (did: string) => {
    
     try {

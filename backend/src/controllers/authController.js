@@ -19,7 +19,7 @@ export const getNonce = async (req, res) => {
     try {
         const nonce = generateNonce(); // Generate a unique nonce
         req.session.nonce = nonce; 
-        console.log('nonce generado y almacenado en session:', req.session.nonce);
+        console.log('nonce saved in session:', req.session.nonce);
        
         res.json({ nonce }); // Send nonce to client
      
@@ -32,25 +32,32 @@ export const getNonce = async (req, res) => {
 // Controller to verify the user's verifiable presentation
 export const verifyPresentation = async (req, res) => {
     
-    const { jwt: verifiablePresentation , nonce} = req.body;
+    //const { jwt: verifiablePresentation , nonce} = req.body;
+    const { jwt: verifiablePresentation } = req.body;
 
-    if (!verifiablePresentation || !nonce) {
+    if (!verifiablePresentation ) {
         return res.status(400).json({ message: 'Missing verifiable presentation or nonce.' });
     }
 
-    const noncefrontend = nonce;
-    console.log('noncefrontend:', noncefrontend);
-
+    //const noncefrontend = nonce;
     
-    console.log('Nonce almacenado en sesión:', req.session ? req.session.nonce : 'No session data');  
-    console.log ('req.session.nonce', req.session.nonce);
-  
-
     try {
         // Verify the verifiable presentation using Veramo
         const { credential, claims, didDocument, hasAccess } = await veramoAgent.verifyPresentation(verifiablePresentation);
 
         const parsedPayload = parseJWT(verifiablePresentation);
+        // Extract nonce from the verifiable presentation
+        const nonce = parsedPayload.nonce;
+        console.log('Received nonce from presentation:', nonce);
+        console.log('Stored nonce in session:', req.session.nonce);
+
+         // Verify nonce
+        if (nonce !== req.session.nonce) {
+            return res.status(403).json({ message: 'Invalid nonce' });
+        }
+  
+      // Invalidate nonce after use to prevent reuse attacks
+        req.session.nonce = null;
  
 
         const currentTime = Math.floor(Date.now() / 1000);

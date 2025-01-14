@@ -45,7 +45,8 @@ const StudentWeb: React.FC = () => {
   return (
     <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
       <Typography variant="h4" color="primary" gutterBottom align="center">
-        Welcome to Your University Portal {firstClaim?.university === 'ETSETB' ? 'ETSETB' : 'EETAC'}
+        {/* Welcome to Your University Portal {firstClaim?.university === 'ETSETB' ? 'ETSETB' : 'EETAC'} */}
+        Welcome to Your University Portal
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>

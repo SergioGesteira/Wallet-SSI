@@ -43,6 +43,7 @@ const UniversityIssue: React.FC = () => {
   const [selectedKey, setSelectedKey] = useState<ManagedKeyInfo | null>(null);
   const [selectedAlgorithm] = useState<string>('EthTypedDataSignature');
   const [agent, setAgent] = useState<ConfiguredAgent | null>(null);
+  const [rejectionMessageShown, setRejectionMessageShown] = useState<boolean>(false);
 
   const navigate = useNavigate();
 
@@ -243,10 +244,10 @@ const UniversityIssue: React.FC = () => {
     }
     try {
       // Fetch nonce from the server
-      //console.log('Fetching nonce from the server...');
-      //const nonceResponse = await axios.get('http://localhost:5000/getNonce');
-      //const nonce = nonceResponse.data.nonce;
-      //console.log('Nonce received from server:', nonce);
+      console.log('Fetching nonce from the server...');
+      const nonceResponse = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
+      const nonce = nonceResponse.data.nonce;
+      console.log('Nonce received from server:', nonce);
 
       const did = `did:ethr:sepolia:${selectedKey.meta?.account.address}`;
       console.log('Holder DID:', did);
@@ -259,6 +260,7 @@ const UniversityIssue: React.FC = () => {
           holder: did,
           verifiableCredential: [verifiableCredential],
           nbf: timestamp,
+          nonce: nonce,
         },
         proofFormat: selectedAlgorithm,
       });
@@ -300,12 +302,38 @@ const UniversityIssue: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const checkDidStatus = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/university/didStatus', { params: { did } });
+        if (res.data.status === 'rejected' && !rejectionMessageShown) {
+          toast.error('Your DID has been rejected by the university.');
+          setStatusMessage('Your DID has been rejected.');
+          setRejectionMessageShown(true);
+          localStorage.setItem('rejectionMessageShown', 'true');
+        }
+      } catch (error) {
+        console.error('Error checking DID status:', error);
+      }
+    };
+
+    const interval = setInterval(checkDidStatus, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, [did, rejectionMessageShown]);
+
+  useEffect(() => {
+    const rejectionMessageShown = localStorage.getItem('rejectionMessageShown');
+    if (rejectionMessageShown === 'true') {
+      setRejectionMessageShown(true);
+    }
+  }, []);
+
   
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
       <Paper elevation={3} sx={{ padding: '2rem' }}>
         <Typography variant="h4" align="center" gutterBottom>
-          University Issue
+          If you don't have a Credential, please submit your DID to the University
         </Typography>
         <WalletConnection
           setKms={setKms}
