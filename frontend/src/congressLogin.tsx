@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import axios, { AxiosError } from 'axios';
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Container, Typography, TextField, Button, Paper, CircularProgress } from '@mui/material';
 import { toast, ToastContainer } from 'react-toastify'; // Import React Toastify
 import 'react-toastify/dist/ReactToastify.css'; // Import Toastify styles
@@ -10,24 +10,33 @@ const acceptedIssuers = [
   'ETSETB (did:ethr:sepolia:0xfA82488EFfc00b09291f6e3A894887C55892Fd69)'
 ];
 
-const Login: React.FC = () => {
+const CongressLogin: React.FC = () => {
   const [verifiablePresentation, setVerifiablePresentation] = useState(''); // Stores the user's verifiable presentation JWT
   const [isLoading, setIsLoading] = useState(false); // Loading state for UI feedback
   const [isFormVisible, setIsFormVisible] = useState(false); // Controls visibility of the login form
+  const [nonce, setNonce] = useState('');
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Fetch the nonce from the server when the component mounts
+    const fetchNonce = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
+        setNonce(response.data.nonce);
+      } catch (error) {
+        console.error('Error fetching nonce:', error);
+        toast.error('Error fetching nonce. Please try again later.');
+      }
+    };
+
+    fetchNonce();
+  }, []);
   
 
   // Handles the login process
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-
-      // console.log('Fetching nonce from the server...');
-      // const nonceResponse = await axios.get('http://localhost:5000/getNonce', { withCredentials: true });
-      // const nonce = nonceResponse.data.nonce;
-      // console.log('Nonce received from server:', nonce);
-      // Send the JWT verifiable presentation and nonce to server for verification
   
         // if (!nonce) return;
       const response = await axios.post(
@@ -56,15 +65,13 @@ const Login: React.FC = () => {
   };
 
     // Redirects the user to the credential app to obtain a verifiable credential
-    const handleRedirectToIssue = () => {
-      navigate('/university-issue'); 
-    };
+
 
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
       <Paper elevation={3} sx={{ padding: '2rem' }}>
         <Typography variant="h4" align="center" gutterBottom>
-          University Login
+        Congress Web Login
         </Typography>
         <Typography variant="body1" color="textSecondary" align="center">
           {isFormVisible ? 'Please paste your JWT verifiable presentation below' : 'Click to login with your verifiable credential'}
@@ -116,16 +123,6 @@ const Login: React.FC = () => {
           </div>
         )}
 
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth
-          onClick={handleRedirectToIssue}
-          sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
-        >
-          Don't have a credential yet?
-        </Button>
-
         <Typography variant="h6" align="center" sx={{ marginTop: '2rem' }}>
   We only accept credentials from these issuers:
 </Typography>
@@ -138,11 +135,13 @@ const Login: React.FC = () => {
     </li>
   ))}
 </ul>
+<Typography variant="h6" align="center" sx={{ marginTop: '2rem' }}>
+  Nonce for this session: {nonce}
+</Typography>
 </Paper>
-
 <ToastContainer />
 </Container>
 );
 };
 
-export default Login;
+export default CongressLogin;

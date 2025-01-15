@@ -1,11 +1,18 @@
+import React from 'react';
 import { VerifiableCredential } from '@veramo/core';
 
 interface CredentialSelectorProps {
   credentials: VerifiableCredential[];
   setSelectedCredential: React.Dispatch<React.SetStateAction<VerifiableCredential | null>>;
+  setVerifiableCredential: React.Dispatch<React.SetStateAction<VerifiableCredential | null>>;
 }
 
-const CredentialSelector: React.FC<CredentialSelectorProps> = ({ credentials, setSelectedCredential }) => {
+const CredentialSelector: React.FC<CredentialSelectorProps> = ({ credentials, setSelectedCredential, setVerifiableCredential }) => {
+  const handleCredentialSelect = (credential: VerifiableCredential) => {
+    setSelectedCredential(credential);
+    setVerifiableCredential(credential);
+  };
+
   return (
     <div className="bg-white shadow-md rounded-lg p-6">
       <h2 className="text-2xl font-semibold mb-4 text-gray-800">Select a Credential</h2>
@@ -17,7 +24,7 @@ const CredentialSelector: React.FC<CredentialSelectorProps> = ({ credentials, se
               id={`credential_${index}`}
               name="credential"
               value={index}
-              onChange={() => setSelectedCredential(credential)}
+              onChange={() => handleCredentialSelect(credential)}
               className="form-radio h-5 w-5 text-blue-600"
             />
             <label htmlFor={`credential_${index}`} className="ml-2 text-gray-700 hover:text-gray-900 cursor-pointer">

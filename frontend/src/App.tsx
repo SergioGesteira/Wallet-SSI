@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Login from './Login';
+import CongressLogin from './congressLogin';
+import UniversityLogin from './UniversityLogin';
 import StudentWeb from './StudentWeb';
 import AdminPanel from './AdminPanel';
 import UniversityIssue from './UniversityIssue';
@@ -11,8 +12,9 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<CongressLogin />} />
         <Route path="/admin" element={<AdminPanel />} /> 
+        <Route path="/university" element={<UniversityLogin />} />
         <Route path="/university-issue" element={<UniversityIssue />} />
         <Route path="/student-web" element={<ProtectedRoute />}>
         <Route path="" element={<StudentWeb />} />

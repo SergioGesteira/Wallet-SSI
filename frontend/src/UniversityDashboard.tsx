@@ -1,7 +1,14 @@
 import React from 'react';
-import { Container, Typography, Card, Grid, Box } from '@mui/material';
+import { Container, Typography, Card, Grid, Box, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const UniversityDashboard: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleRedirectToIssue = () => {
+    navigate('/university-issue');
+  };
+
   return (
     <Container maxWidth="lg" sx={{ marginTop: '4rem' }}>
       {/* Header Section */}
@@ -11,6 +18,26 @@ const UniversityDashboard: React.FC = () => {
       <Typography variant="subtitle1" color="textSecondary" align="center" gutterBottom>
         Explore the latest updates, resources, and information about our university.
       </Typography>
+
+      {/* Redirect to Issue Button */}
+      <Box sx={{ textAlign: 'center', marginTop: '2rem' }}>
+        <Typography variant="h5" color="primary" gutterBottom>
+          Don't have a verifiable credential yet? Our university now issues them for SSI purposes!
+        </Typography>
+        <Typography variant="body1" color="textSecondary" align="center" gutterBottom>
+          If you don't have a verifiable credential that demonstrates that your are a student from this university yet, click the button below to apply for one.
+          Your application will be reviewed and processed by the university.
+        </Typography>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          onClick={handleRedirectToIssue}
+          sx={{ marginTop: '1rem', paddingY: '0.75rem', fontSize: '1rem' }}
+        >
+          Get Your Credential
+        </Button>
+      </Box>
 
       {/* Announcements Section */}
       <Box sx={{ marginTop: '2rem' }}>

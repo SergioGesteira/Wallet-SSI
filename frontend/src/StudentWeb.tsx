@@ -1,35 +1,23 @@
 import React, { useEffect } from 'react';
-import { Container, Typography, Card, Grid, Box, Button } from '@mui/material';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Container, Typography, Card, Grid, Box } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const StudentWeb: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+
   const credential = location.state?.credential;
   const claims = location.state?.claims;
 
-  
-  console.log('Location state:', location.state); // Debugging statement
-  console.log('Credential:', credential); // Debugging statement
-  console.log('Claims:', claims); // Debugging statement
-
   const firstClaim = Array.isArray(claims) && claims.length > 0 ? claims[0] : null;
 
- 
-    // Show a notification based on whether claim data is available
-    useEffect(() => {
-        if (!firstClaim) {
-            toast.error('No credential data available.'); // Show error if no claim data
-        } else {
-            toast.success('Credential data loaded successfully.'); // Success notification if data is available
-        }
-    }, [firstClaim]);
-
-
-  const handleNavigateToDashboard = () => {
-    navigate('/dashboard', { state: { credential, claims } });
-  };
+  useEffect(() => {
+    if (!firstClaim) {
+      toast.error('No credential data available.');
+    } else {
+      toast.success('Credential data loaded successfully.');
+    }
+  }, [firstClaim]);
 
 
   if (!credential || !claims) {
@@ -45,14 +33,13 @@ const StudentWeb: React.FC = () => {
   return (
     <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
       <Typography variant="h4" color="primary" gutterBottom align="center">
-        {/* Welcome to Your University Portal {firstClaim?.university === 'ETSETB' ? 'ETSETB' : 'EETAC'} */}
-        Welcome to Your University Portal
+        Welcome to the Congress Web Portal
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', marginBottom: '2rem' }}>
         <Card variant="outlined" sx={{ padding: '2rem', maxWidth: '80%', backgroundColor: '#f0f4f8' }}>
           <Typography variant="h5" color="primary" gutterBottom>
-            Student Information
+            Participant Information
           </Typography>
           <Grid container spacing={2}>
             {Object.entries(firstClaim).map(([key, value]) => (
@@ -75,11 +62,16 @@ const StudentWeb: React.FC = () => {
           {JSON.stringify(credential, null, 2)}
         </pre>
       </Card>
-
-      <Box sx={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Button variant="contained" color="primary" onClick={handleNavigateToDashboard} sx={{ marginTop: '1rem' }}>
-          Go to Dashboard
-        </Button>
+      <Box sx={{ textAlign: 'center', marginTop: '4rem' }}>
+        <Typography variant="h5" color="primary" gutterBottom>
+          Welcome Video
+        </Typography>
+        <Card variant="outlined" sx={{ padding: '2rem', backgroundColor: '#f9f9f9' }}>
+          <video width="100%" controls>
+            <source src="path/to/your/video.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        </Card>
       </Box>
     </Container>
   );
