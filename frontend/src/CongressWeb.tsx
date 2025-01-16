@@ -3,7 +3,7 @@ import { Container, Typography, Card, Grid, Box } from '@mui/material';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const StudentWeb: React.FC = () => {
+const CongressWeb: React.FC = () => {
   const location = useLocation();
 
   const credential = location.state?.credential;
@@ -77,4 +77,4 @@ const StudentWeb: React.FC = () => {
   );
 };
 
-export default StudentWeb;
+export default CongressWeb;

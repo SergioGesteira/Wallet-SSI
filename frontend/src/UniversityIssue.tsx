@@ -47,116 +47,116 @@ const UniversityIssue: React.FC = () => {
 
   const navigate = useNavigate();
 
-   const importDids = useCallback(async () => {
-      if (!agent) {
-        throw new Error('Agent not initialized');
-      }
-  
-      if (!keys || keys.length === 0) {
-        throw new Error('No keys found');
-      }
-  
-      keys.forEach(async (key) => {
-        const did = `did:ethr:sepolia:${key.meta?.account.address}`;
-        const importedDid = await agent.didManagerImport({
-          did,
-          controllerKeyId: key.kid,
-          provider: 'did:ethr:sepolia',
-          keys: [
-            {
-              kid: key.kid,
-              type: 'Secp256k1',
-              kms: 'web3',
-              publicKeyHex: key.publicKeyHex,
-              meta: key.meta,
-              privateKeyHex: '',
-            },
-          ],
-        });
-        console.log('DID created: ', importedDid);
-        const test = await agent.resolveDid({ didUrl: did });
-        console.log('DID resolved: ', test);
-      });
-    }, [agent, keys]);
-    
-  const createVeramoAgent = useCallback(async () => {
-      const didStore = new MemoryDIDStore();
-      const keyStore = new MemoryKeyStore();
-      const browserProvider = new BrowserProvider(window.ethereum as Eip1193Provider);
-  
-      const registries = {
-        mainnet: '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
-        sepolia: '0x03d5003bf0e79c5f5223588f347eba39afbc3818',
-      };
-      if (!kms || !browserProvider) {
-        throw new Error('KMS not initialized');
-      }
-     
-      const veramoAgent = createAgent<IDIDManager & IResolver & ICredentialPlugin & IDataStore & IKeyManager>({
-        plugins: [
-          new KeyManager({
-            store: keyStore,
-            kms: {
-              web3: kms,
-            },
-          }),
-          new DIDManager({
-            store: didStore,
-            defaultProvider: 'did:ethr',
-            providers: {
-              'did:ethr': new EthrDIDProvider({
-                defaultKms: 'web3',
-                registry: registries['mainnet'],
-                web3Provider: browserProvider,
-              }),
-              'did:ethr:sepolia': new EthrDIDProvider({
-                defaultKms: 'web3',
-                registry: registries['sepolia'],
-                web3Provider: browserProvider,
-              }),
-            },
-          }),
-          new DIDResolverPlugin({
-            resolver: new Resolver(
-              getEthrDidResolver({
-                networks: [
-                  {
-                    name: 'mainnet',
-                    registry: registries['mainnet'],
-                    provider: browserProvider,
-                    signer: browserProvider.getSigner(),
-                  },
-                  {
-                    name: 'sepolia',
-                    registry: registries['sepolia'],
-                    provider: browserProvider,
-                    signer: browserProvider.getSigner(),
-                  },
-                ],
-              })
-            ),
-          }),
-          new CredentialPlugin({
-            issuers: [new CredentialProviderEIP712(), new CredentialProviderEip712JWT()],
-          }),
+  const importDids = useCallback(async () => {
+    if (!agent) {
+      throw new Error('Agent not initialized');
+    }
+
+    if (!keys || keys.length === 0) {
+      throw new Error('No keys found');
+    }
+
+    keys.forEach(async (key) => {
+      const did = `did:ethr:sepolia:${key.meta?.account.address}`;
+      const importedDid = await agent.didManagerImport({
+        did,
+        controllerKeyId: key.kid,
+        provider: 'did:ethr:sepolia',
+        keys: [
+          {
+            kid: key.kid,
+            type: 'Secp256k1',
+            kms: 'web3',
+            publicKeyHex: key.publicKeyHex,
+            meta: key.meta,
+            privateKeyHex: '',
+          },
         ],
       });
-    
-      console.log('Veramo Agent creado');
-      setAgent(veramoAgent);
-    }, [kms,setAgent]);
-  
+      console.log('DID created: ', importedDid);
+      const test = await agent.resolveDid({ didUrl: did });
+      console.log('DID resolved: ', test);
+    });
+  }, [agent, keys]);
+
+  const createVeramoAgent = useCallback(async () => {
+    const didStore = new MemoryDIDStore();
+    const keyStore = new MemoryKeyStore();
+    const browserProvider = new BrowserProvider(window.ethereum as Eip1193Provider);
+
+    const registries = {
+      mainnet: '0xdca7ef03e98e0dc2b855be647c39abe984fcf21b',
+      sepolia: '0x03d5003bf0e79c5f5223588f347eba39afbc3818',
+    };
+    if (!kms || !browserProvider) {
+      throw new Error('KMS not initialized');
+    }
+
+    const veramoAgent = createAgent<IDIDManager & IResolver & ICredentialPlugin & IDataStore & IKeyManager>({
+      plugins: [
+        new KeyManager({
+          store: keyStore,
+          kms: {
+            web3: kms,
+          },
+        }),
+        new DIDManager({
+          store: didStore,
+          defaultProvider: 'did:ethr',
+          providers: {
+            'did:ethr': new EthrDIDProvider({
+              defaultKms: 'web3',
+              registry: registries['mainnet'],
+              web3Provider: browserProvider,
+            }),
+            'did:ethr:sepolia': new EthrDIDProvider({
+              defaultKms: 'web3',
+              registry: registries['sepolia'],
+              web3Provider: browserProvider,
+            }),
+          },
+        }),
+        new DIDResolverPlugin({
+          resolver: new Resolver(
+            getEthrDidResolver({
+              networks: [
+                {
+                  name: 'mainnet',
+                  registry: registries['mainnet'],
+                  provider: browserProvider,
+                  signer: browserProvider.getSigner(),
+                },
+                {
+                  name: 'sepolia',
+                  registry: registries['sepolia'],
+                  provider: browserProvider,
+                  signer: browserProvider.getSigner(),
+                },
+              ],
+            })
+          ),
+        }),
+        new CredentialPlugin({
+          issuers: [new CredentialProviderEIP712(), new CredentialProviderEip712JWT()],
+        }),
+      ],
+    });
+
+    console.log('Veramo Agent creado');
+    setAgent(veramoAgent);
+  }, [kms, setAgent]);
+
 
   useEffect(() => {
-     if (kms && !agent) {
-       createVeramoAgent();
-     }
-     if (agent) {
-       importDids();
-     }
-   }, [kms, createVeramoAgent, agent, importDids]);
-   
-  
+    if (kms && !agent) {
+      createVeramoAgent();
+    }
+    if (agent) {
+      importDids();
+    }
+  }, [kms, createVeramoAgent, agent, importDids]);
+
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -164,7 +164,7 @@ const UniversityIssue: React.FC = () => {
       toast.error('Invalid DID format. Please enter a valid DID.');
       return;
     }
-    
+
     try {
       await resolveDid(did);
       if (!resolvedDidDocument) {
@@ -217,26 +217,26 @@ const UniversityIssue: React.FC = () => {
   };
 
   useEffect(() => {
-  const fetchVerifiableCredential = async () => {
-    try {
-      const res = await axios.get('http://localhost:5000/university/getStoredVerifiableCredential');
-      if (res.data.success) {
-        const credential = JSON.parse(res.data.verifiableCredential);
-        setVerifiableCredential(credential);
-        setCredentialJson(JSON.stringify(credential, null, 2)); 
-        toast.success('Verifiable Credential fetched successfully.');
-      } else {
-        toast.error('No Verifiable Credential found.');
+    const fetchVerifiableCredential = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/university/getStoredVerifiableCredential');
+        if (res.data.success) {
+          const credential = JSON.parse(res.data.verifiableCredential);
+          setVerifiableCredential(credential);
+          setCredentialJson(JSON.stringify(credential, null, 2));
+          toast.success('Verifiable Credential fetched successfully.');
+        } else {
+          toast.error('No Verifiable Credential found.');
+        }
+      } catch (error) {
+        console.error('Error fetching verifiable credential:', error);
+
       }
-    } catch (error) {
-      console.error('Error fetching verifiable credential:', error);
-      
-    }
-  };
+    };
     const interval = setInterval(fetchVerifiableCredential, 10000); // Check every 10 seconds
     return () => clearInterval(interval);
   }, []);
-  
+
   const handleCreatePresentation = async () => {
     if (!agent || !selectedKey || !verifiableCredential) {
       toast.error('Missing required fields to create presentation.');
@@ -267,7 +267,7 @@ const UniversityIssue: React.FC = () => {
 
       setVerifiablePresentation(presentation);
       toast.success('Verifiable Presentation created successfully.');
-      
+
     } catch (error) {
       console.error('Error creating presentation:', error);
       toast.error('Error creating presentation. Please try again later.');
@@ -278,14 +278,22 @@ const UniversityIssue: React.FC = () => {
     try {
       const parsedCredential = JSON.parse(credentialJson) as VerifiableCredential;
       setVerifiableCredential(parsedCredential);
-      toast.success('Verifiable Credential set successfully.');
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      navigator.clipboard.writeText(credentialJson)
+        .then(() => {
+          toast.success('Verifiable Credential set and copied to clipboard successfully.');
+        })
+        .catch((error) => {
+          console.error('Error copying credential to clipboard:', error);
+          toast.error('Error copying credential to clipboard.');
+        });
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       toast.error('Invalid JWT format. Please enter a valid JWT.');
     }
   };
 
-  
+
 
   const handleCopyJwtToClipboard = () => {
     if (verifiablePresentation && verifiablePresentation.proof && verifiablePresentation.proof.jwt) {
@@ -328,7 +336,7 @@ const UniversityIssue: React.FC = () => {
     }
   }, []);
 
-  
+
   return (
     <Container maxWidth="sm" sx={{ marginTop: '4rem' }}>
       <Paper elevation={3} sx={{ padding: '2rem' }}>
@@ -374,36 +382,36 @@ const UniversityIssue: React.FC = () => {
             {statusMessage}
           </Typography>
         )}
-    {jwt && (
-    <div>
-    <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
-      The JWT is displayed below. You can copy it for your use.
-    </Typography>
-    <pre
-      style={{
-        wordBreak: 'break-word', // Allows breaking long words
-        whiteSpace: 'pre-wrap', // Preserves whitespace and wraps text
-        maxHeight: '200px', // Limits the height of the pre element
-        overflowY: 'auto', // Adds a vertical scrollbar if content overflows
-        backgroundColor: '#f5f5f5', // Light gray background for better readability
-        padding: '10px', // Padding for better readability
-        borderRadius: '5px', // Rounded corners
-        fontFamily: 'monospace', // Monospaced font for technical data
-      }}
-    >
-      {jwt}
-    </pre>
-    <Button
-      variant="contained"
-      color="secondary"
-      fullWidth
-      onClick={handleReturnToLogin}
-      sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
-    >
-      Return to Login
-    </Button>
-  </div>
-  )}
+        {jwt && (
+          <div>
+            <Typography variant="body2" align="center" color="textSecondary" gutterBottom>
+              The JWT is displayed below. You can copy it for your use.
+            </Typography>
+            <pre
+              style={{
+                wordBreak: 'break-word', // Allows breaking long words
+                whiteSpace: 'pre-wrap', // Preserves whitespace and wraps text
+                maxHeight: '200px', // Limits the height of the pre element
+                overflowY: 'auto', // Adds a vertical scrollbar if content overflows
+                backgroundColor: '#f5f5f5', // Light gray background for better readability
+                padding: '10px', // Padding for better readability
+                borderRadius: '5px', // Rounded corners
+                fontFamily: 'monospace', // Monospaced font for technical data
+              }}
+            >
+              {jwt}
+            </pre>
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              onClick={handleReturnToLogin}
+              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+            >
+              Return to Login
+            </Button>
+          </div>
+        )}
         {resolvedDidDocument && (
           <div>
             <Typography variant="h5" align="center" gutterBottom>
@@ -424,7 +432,7 @@ const UniversityIssue: React.FC = () => {
             </pre>
           </div>
         )}
-         {verifiableCredential && (
+        {verifiableCredential && (
           <>
             <TextField
               label="Verifiable Credential"
@@ -444,7 +452,7 @@ const UniversityIssue: React.FC = () => {
               onClick={handleSetVerifiableCredential}
               sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
             >
-              Set Verifiable Credential
+              Copy to clipboard Verifiable Credential
             </Button>
           </>
         )}
@@ -497,7 +505,7 @@ const UniversityIssue: React.FC = () => {
             </Button>
           </div>
         )}
-       
+
       </Paper>
       <ToastContainer />
     </Container>

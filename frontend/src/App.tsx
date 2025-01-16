@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import CongressLogin from './congressLogin';
 import UniversityLogin from './UniversityLogin';
-import StudentWeb from './StudentWeb';
+import CongressWeb from './CongressWeb';
 import AdminPanel from './AdminPanel';
 import UniversityIssue from './UniversityIssue';
 import UniversityDashboard from './UniversityDashboard';
@@ -17,7 +17,7 @@ const App: React.FC = () => {
         <Route path="/university" element={<UniversityLogin />} />
         <Route path="/university-issue" element={<UniversityIssue />} />
         <Route path="/student-web" element={<ProtectedRoute />}>
-        <Route path="" element={<StudentWeb />} />
+        <Route path="" element={<CongressWeb />} />
         </Route>
         <Route path="/dashboard" element={<UniversityDashboard />} />
       </Routes>
