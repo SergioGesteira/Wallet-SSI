@@ -7,12 +7,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import WalletConnection from './components/WalletConnection';
 import AccountSelector from './components/AccountSelector';
 import CredentialSelector from './components/CredentialSelector';
-// import DidDisplay from './components/DidDisplay';
-// import CredentialIssuer from './components/CredentialIssuer';
-// import CredentialValidator from './components/CredentialValidator';
-// import PresentationCreator from './components/PresentationCreator';
-// import PresentationDisplay from './components/PresentationDisplay';
-// import PresentationValidator from './components/PresentationValidator';
 import { Web3KeyManagementSystem } from '@veramo/kms-web3';
 import { BrowserProvider, Signer } from 'ethers';
 import { addDelegate, changeOwner, ConfiguredAgent, getDidDocument, revokeDelegate } from './components/Utils';
@@ -70,7 +64,7 @@ createAppKit({
 });
 
 
-const UniversityIssue: React.FC = () => {
+const SSIWallet: React.FC = () => {
   //   const [did, setDid] = useState<string>('');
   //   const [response, setResponse] = useState<unknown>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -96,6 +90,7 @@ const UniversityIssue: React.FC = () => {
   const [selectedDidDocument, setSelectedDidDocument] = useState<DIDDocument | null>(null);
   const [delegateAddress, setDelegateAddress] = useState<string>('');
   const [expirationTime, setExpirationTime] = useState(3600);
+  const [showManageDID, setShowManageDID] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [nonce, setNonce] = useState<string>('');
 
@@ -317,6 +312,10 @@ const UniversityIssue: React.FC = () => {
       throw new Error('Browser provider not initialized');
     }
 
+    if (!delegateAddress) {
+      alert('Delegate address is required');
+      return;
+    }
     const signer = await browserProvider.getSigner();
     const identity = `did:ethr:sepolia:${selectedKey?.meta?.account.address}`; // Assuming you want to add a delegate to the selected key's DID
 
@@ -340,6 +339,10 @@ const UniversityIssue: React.FC = () => {
   }, [browserProvider, agent, selectedKey, revokeDelegateAddress]);
 
 
+  const toggleManageDID = () => {
+    setShowManageDID(!showManageDID);
+  };
+
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
@@ -350,8 +353,8 @@ const UniversityIssue: React.FC = () => {
 
 
   return (
-    <Container maxWidth="sm" sx={{ marginTop: '4rem', marginBottom: '4rem', textAlign: 'left'  }}>
-      <Paper elevation={3} sx={{ padding: '2rem', borderRadius: '8px' ,textAlign: 'left'  }}>
+    <Container maxWidth="sm" sx={{ marginTop: '4rem', marginBottom: '4rem', textAlign: 'left' }}>
+      <Paper elevation={3} sx={{ padding: '2rem', borderRadius: '8px', textAlign: 'left' }}>
         <Typography variant="h4" align="left" gutterBottom>
           Welcome to your SSI-Wallet
         </Typography>
@@ -360,9 +363,76 @@ const UniversityIssue: React.FC = () => {
           setKeys={setKeys}
           setBrowserProvider={setBrowserProvider}
           setSigner={setSigner}
-
         />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={toggleManageDID}
+          disabled={!selectedDidDocument}
+          sx={{ marginTop: '2rem', width: '100%' }}
+        >
+          Manage DID
+        </Button>
+        {showManageDID && (
+          <div style={{ position: 'absolute', top: '10rem', right: '2rem', width: '30%', padding: '1rem', border: '1px solid #ccc', borderRadius: '8px', backgroundColor: '#fff' }}>
+            <Typography variant="h6" align="left" gutterBottom>
+              DID Management
+            </Typography>
 
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              onClick={handleChangeOwner}
+              sx={{ marginBottom: '1rem' }}
+            >
+              Change Owner
+            </Button>
+
+            <TextField
+              label="Delegate Address"
+              value={delegateAddress}
+              onChange={(e) => setDelegateAddress(e.target.value)}
+              fullWidth
+              sx={{ marginBottom: '1rem' }}
+            />
+            <TextField
+              label="Expiration Time (seconds)"
+              value={expirationTime}
+              onChange={(e) => setExpirationTime(Number(e.target.value))}
+              fullWidth
+              sx={{ marginBottom: '1rem' }}
+            />
+
+            <Button
+              variant="contained"
+              color="secondary"
+              fullWidth
+              onClick={handleAddDelegate}
+              sx={{ marginBottom: '1rem' }}
+            >
+              Add Delegate
+            </Button>
+
+            <TextField
+              label="Revoke Delegate Address"
+              value={revokeDelegateAddress}
+              onChange={(e) => setRevokeDelegateAddress(e.target.value)}
+              fullWidth
+              sx={{ marginBottom: '1rem' }}
+            />
+            <div style={{ marginTop: '2rem' }}>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                onClick={handleRevokeDelegate}
+              >
+                Revoke Delegate
+              </Button>
+            </div>
+          </div>
+        )}
         {keys.length > 0 && (
           <div style={{ marginTop: '2rem' }}>
             <AccountSelector keys={keys} selectedKey={selectedKey} setSelectedKey={setSelectedKey} setCredentials={setCredentials} />
@@ -374,8 +444,18 @@ const UniversityIssue: React.FC = () => {
               <DidDisplay selectedDidDocument={selectedDidDocument} />
             </div>
             {credentials.length > 0 && (
-              <div style={{ marginTop: '2rem' }}>
-                <CredentialSelector credentials={credentials} setSelectedCredential={setSelectedCredential} setVerifiableCredential={setVerifiableCredential}  />
+              <div className="mt-8">
+                <div style={{ marginTop: '2rem' }}></div>
+                <Typography variant="body2" align="left" color="textSecondary" gutterBottom>
+                  In this section you can consult your avaliable verifiable credentials.
+                </Typography>
+                <div className="bg-white border border-gray-300 rounded-lg p-4 max-w-full overflow-x-auto">
+                  <CredentialSelector
+                    credentials={credentials}
+                    setSelectedCredential={setSelectedCredential}
+                    setVerifiableCredential={setVerifiableCredential}
+                  />
+                </div>
               </div>
             )}
             <Button
@@ -387,30 +467,33 @@ const UniversityIssue: React.FC = () => {
             >
               See My Credential
             </Button>
-            <Modal open={isModalOpen} onClose={handleCloseModal}>
-              <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4 }}>
-                <Typography variant="h6" align="left" component="h2">
-                  My Credential
-                </Typography>
-                {selectedCredential ? (
-                  <CredentialDisplay verifiableCredential={selectedCredential} />
-                ) : (
-                  <Typography variant="body2" align="left" color="textSecondary">
-                    No credential selected.
-                  </Typography>
-                )}
-              </Box>
-            </Modal>
-            <div style={{ marginTop: '2rem' }}>
-              <CredentialIssuer
-                agent={agent}
-                selectedKey={selectedKey}
-                setSelectedAlgorithm={setSelectedAlgorithm}
-                setVerifiableCredential={setVerifiableCredential}
-              />
-            </div>
           </>
         )}
+        <Modal open={isModalOpen} onClose={handleCloseModal}>
+          <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', border: '2px solid #000', boxShadow: 24, p: 4 }}>
+            <Typography variant="h6" align="left" component="h2">
+              My Credential
+            </Typography>
+            {selectedCredential ? (
+              <CredentialDisplay verifiableCredential={selectedCredential} />
+            ) : (
+              <Typography variant="body2" align="left" color="textSecondary">
+                No credential selected.
+              </Typography>
+            )}
+          </Box>
+        </Modal>
+        <div style={{ marginTop: '2rem' }}>
+          <Typography variant="body2" align="left" color="textSecondary" gutterBottom>
+            You can issue a verifiable credential signed by yourself, it may not be accepted by all organizations!
+          </Typography>
+          <CredentialIssuer
+            agent={agent}
+            selectedKey={selectedKey}
+            setSelectedAlgorithm={setSelectedAlgorithm}
+            setVerifiableCredential={setVerifiableCredential}
+          />
+        </div>
         {jwt && (
           <div style={{ marginTop: '2rem' }}>
             <Typography variant="body2" align="left" color="textSecondary" gutterBottom>
@@ -433,9 +516,12 @@ const UniversityIssue: React.FC = () => {
             </pre>
           </div>
         )}
-
         {(
           <>
+          <div style={{ marginTop: '2rem' }}></div>
+            <Typography variant="body2" align="left" color="textSecondary" gutterBottom>
+              You can import verifiable credentials issued by organizations or institutions pasting it in JSON-LD format.
+            </Typography>
             <TextField
               label="Verifiable Credential"
               placeholder="Paste your verifiable credential here"
@@ -458,11 +544,15 @@ const UniversityIssue: React.FC = () => {
             </Button>
           </>
         )}
-
         {(
           <>
+          <div style={{ marginTop: '2rem' }}></div>
+            <Typography variant="body2" align="left" color="textSecondary" gutterBottom>
+              If you want to create a verifiable presentation, you can do so by clicking the button below.
+              You can add a Nonce if an organization requires it.
+            </Typography>
             <TextField
-              label="Nonce"
+              label="Nonce (optional)"
               placeholder="Enter a nonce (optional)"
               variant="outlined"
               fullWidth
@@ -481,7 +571,6 @@ const UniversityIssue: React.FC = () => {
             </Button>
           </>
         )}
-
         {verifiablePresentation && (
           <div style={{ marginTop: '2rem' }}>
             <Typography variant="h5" align="left" gutterBottom>
@@ -511,74 +600,9 @@ const UniversityIssue: React.FC = () => {
             </Button>
           </div>
         )}
-
       </Paper>
-
-      <div style={{ marginTop: '2rem' }}>
-        <button
-          onClick={handleChangeOwner}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out w-full"
-        >
-          Change Owner
-        </button>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Delegate Address:
-          <input
-            type="text"
-            value={delegateAddress}
-            onChange={(e) => setDelegateAddress(e.target.value)}
-            className="block w-full text-sm font-medium text-gray-700 mb-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2"
-          />
-        </label>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Expiration Time (seconds):
-          <input
-            type="text"
-            value={expirationTime}
-            onChange={(e) => setExpirationTime(Number(e.target.value))}
-            className="block w-full text-sm font-medium text-gray-700 mb-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2"
-          />
-        </label>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <button
-          onClick={handleAddDelegate}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out w-full"
-        >
-          Add Delegate
-        </button>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Revoke Delegate Address:
-          <input
-            type="text"
-            value={revokeDelegateAddress}
-            onChange={(e) => setRevokeDelegateAddress(e.target.value)}
-            className="block w-full text-sm font-medium text-gray-700 mb-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 p-2"
-          />
-        </label>
-      </div>
-
-      <div style={{ marginTop: '2rem' }}>
-        <button
-          onClick={handleRevokeDelegate}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out w-full"
-        >
-          Revoke Delegate
-        </button>
-      </div>
-
       <ToastContainer />
     </Container>
   );
 };
-export default UniversityIssue;
+export default SSIWallet;

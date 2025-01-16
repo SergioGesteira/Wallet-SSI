@@ -276,14 +276,17 @@ const AdminPanel: React.FC = () => {
       }
     };
 
-
     return (
-      <Container maxWidth="md" sx={{ marginTop: '4rem' }}>
-        <Paper elevation={3} sx={{ padding: '2rem' }}>
-          <Typography variant="h4" align="center" gutterBottom>
+      <Container maxWidth="md" sx={{ marginTop: '4rem', padding: '2rem', backgroundColor: '#f5f5f5', borderRadius: '8px' }}>
+        <Paper elevation={6} sx={{ padding: '3rem', borderRadius: '12px' }}>
+          <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#333' }}>
             Admin Panel
           </Typography>
-          {message && <Typography variant="body1" color="textSecondary" align="center">{message}</Typography>}
+          {message && (
+            <Typography variant="body1" color="textSecondary" align="center" sx={{ marginBottom: '1rem' }}>
+              {message}
+            </Typography>
+          )}
           <WalletConnection
             setKms={setKms}
             setKeys={setKeys}
@@ -291,8 +294,8 @@ const AdminPanel: React.FC = () => {
             setSigner={setSigner}
             setSelectedKey={setSelectedKey}
           />
-          <div style={{ marginBottom: '20px' }}></div>
-          {selectedDidDocument != null && <DidDisplay selectedDidDocument={selectedDidDocument} />}
+          <div style={{ marginBottom: '2rem' }}></div>
+          {selectedDidDocument && <DidDisplay selectedDidDocument={selectedDidDocument} />}
           {approvedDid && (
             <CredentialIssuer
               agent={agent}
@@ -302,11 +305,11 @@ const AdminPanel: React.FC = () => {
               did={approvedDid}
             />
           )}
-          {verifiableCredential != null && <CredentialDisplay verifiableCredential={verifiableCredential} />}
-          {verifiableCredential != null && (
+          {verifiableCredential && <CredentialDisplay verifiableCredential={verifiableCredential} />}
+          {verifiableCredential && (
             <CredentialValidator agent={agent} verifiableCredential={verifiableCredential} />
           )}
-          {verifiableCredential != null && (
+          {verifiableCredential && (
             <PresentationCreator
               agent={agent}
               selectedAlgorithm={selectedAlgorithm}
@@ -315,47 +318,66 @@ const AdminPanel: React.FC = () => {
               setVerifiablePresentation={setVerifiablePresentation}
             />
           )}
-          {verifiablePresentation != null && <PresentationDisplay verifiablePresentation={verifiablePresentation} />}
-          {verifiablePresentation != null && (
+          {verifiablePresentation && <PresentationDisplay verifiablePresentation={verifiablePresentation} />}
+          {verifiablePresentation && (
             <PresentationValidator agent={agent} verifiablePresentation={verifiablePresentation} />
           )}
-          <div style={{ marginBottom: '20px' }}></div>
+          <div style={{ marginBottom: '2rem' }}></div>
           {verifiablePresentation && (
             <Button
               variant="contained"
               color="primary"
               onClick={handleSendPresentation}
-              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+              sx={{
+                marginTop: '1.5rem',
+                paddingY: '0.75rem',
+                fontSize: '1rem',
+                backgroundColor: '#007bff',
+                ':hover': { backgroundColor: '#0056b3' },
+                transition: 'background-color 0.3s',
+              }}
             >
               Send Verifiable Presentation to User
             </Button>
           )}
-          <div style={{ marginBottom: '20px' }}></div>
+          <div style={{ marginBottom: '2rem' }}></div>
           {verifiableCredential && (
             <Button
               variant="contained"
               color="primary"
               onClick={handleSendCredential}
-              sx={{ marginTop: '1.5rem', paddingY: '0.75rem', fontSize: '1rem' }}
+              sx={{
+                marginTop: '1.5rem',
+                paddingY: '0.75rem',
+                fontSize: '1rem',
+                backgroundColor: '#28a745',
+                ':hover': { backgroundColor: '#218838' },
+                transition: 'background-color 0.3s',
+              }}
             >
               Send Verifiable Credential to User
             </Button>
           )}
-          <div style={{ marginBottom: '20px' }}></div>
-          <List>
+          <div style={{ marginBottom: '2rem' }}></div>
+          <List sx={{ backgroundColor: '#fff', borderRadius: '8px' }}>
             {pendingDIDs.map((did) => (
-              <ListItem key={did}>
-                <ListItemText primary={did} />
+              <ListItem key={did} sx={{ padding: '1rem', borderBottom: '1px solid #ddd' }}>
+                <ListItemText primary={did} sx={{ wordBreak: 'break-word' }} />
                 <ListItemSecondaryAction>
                   <Button
                     variant="contained"
                     color="primary"
                     onClick={() => handleApprove(did)}
-                    sx={{ marginRight: '1rem' }}
+                    sx={{ marginRight: '1rem', backgroundColor: '#17a2b8', ':hover': { backgroundColor: '#117a8b' } }}
                   >
                     Approve
                   </Button>
-                  <Button variant="contained" color="secondary" onClick={() => handleReject(did)}>
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    onClick={() => handleReject(did)}
+                    sx={{ backgroundColor: '#dc3545', ':hover': { backgroundColor: '#c82333' } }}
+                  >
                     Reject
                   </Button>
                 </ListItemSecondaryAction>
@@ -366,5 +388,5 @@ const AdminPanel: React.FC = () => {
         <ToastContainer />
       </Container>
     );
-  };
+  }
 export default AdminPanel;
