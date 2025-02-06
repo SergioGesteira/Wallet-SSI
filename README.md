@@ -1,4 +1,5 @@
 Web3 Wallet Signatures for Self-Sovereign Identity (SSI) – Master's Thesis
+
 📖 Master’s Thesis for the Master's Degree in Advanced Telecommunication Technologies (MATT) at Universitat Politècnica de Catalunya (UPC)
 
 📌 Overview
