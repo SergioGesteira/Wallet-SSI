@@ -24,23 +24,24 @@ This work has been nominated for distinction (Matrícula de Honor) for its contr
 
 🛠️ Technologies Used
 
-Blockchain: Ethereum (Sepolia Testnet)
+-Blockchain: Ethereum (Sepolia Testnet)
 
-DID Method: Ethr-DID
+-DID Method: Ethr-DID
 
-Standards: W3C Verifiable Credentials, EIP-712 Typed Data Signing
+-Standards: W3C Verifiable Credentials, EIP-712 Typed Data Signing
 
-Smart Contracts: Ethr-DID Registry
+-Smart Contracts: Ethr-DID Registry
 
-Authentication: Login Strategy with Self-Sovereign Identity (SSI), Selective Disclosure
+-Authentication: Login Strategy with Self-Sovereign Identity (SSI), Selective Disclosure
 
 🔧 How to Use It
 
 1️⃣ Prerequisites
 Before using the system, make sure you have:
 
-Metamask or any Web3 wallet installed and connected to your browser
-Ethereum test funds (you can get them from a Sepolia Faucet)
+-Metamask or any Web3 wallet installed and connected to your browser
+
+-Ethereum test funds (you can get them from a Sepolia Faucet)
 
 2️⃣ Clone the Repository
 
@@ -50,11 +51,13 @@ Ethereum test funds (you can get them from a Sepolia Faucet)
 
 
 🔮 Future Work
-Adding support for more wallets and/or blockchain networks.
-Enhancing scalability and data storage solutions.
-Improving DID ownership verification mechanisms before issuing credentials.
+
+-Adding support for more wallets and/or blockchain networks.
+-Enhancing scalability and data storage solutions.
+-Improving DID ownership verification mechanisms before issuing credentials.
 
 📫 Contact & Collaboration
+
 If you’re interested in Self-Sovereign Identity, Web3, and Decentralized Authentication, feel free to connect! 🚀
 
 💼 LinkedIn: https://www.linkedin.com/in/sergio-gesteira-gonz%C3%A1lez
